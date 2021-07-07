@@ -36,7 +36,6 @@ const profile: ProfileTab = {
   index: "0",
   focus: false,
 };
-
 console.log(home, profile);
 
 const Main = () => {};

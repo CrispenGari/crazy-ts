@@ -150,3 +150,34 @@ console.log(home, profile);
 ```
 
 The `Tabs` accepts three generic types and allows us to create types from it. So the above code helps us creating `2` types of Tab, with different types for each property.
+
+### Prop Type React.
+
+We can define what props the component will be receiving. `React.FC` is a generic type that takes props type, which are the props that the component will be using. If we don't pass
+`HomeProps` to `React.FC` then typescript wont be happy if we try to destructure props.
+
+```tsx
+import React from "react";
+import "./main.ts";
+interface HomeProps {
+  name: string;
+  index: number;
+}
+const Home: React.FC<HomeProps> = ({ name, index, children }) => {
+  return (
+    <>
+      <p>
+        {name}: <strong>{index}</strong>
+      </p>
+    </>
+  );
+};
+const App: React.FC = () => {
+  return (
+    <div className="app">
+      <Home name="Home" index={10} />
+    </div>
+  );
+};
+export default App;
+```
