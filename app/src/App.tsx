@@ -1,32 +1,62 @@
-import React from "react";
+import React, { useReducer } from "react";
 import "./main.ts";
-interface HomeProps {
-  name: string;
-  index: number;
-}
-const Home: React.FC<HomeProps> = ({ name, index, children }) => {
-  return (
-    <>
-      <p>
-        {name}: <strong>{index}</strong>
-      </p>
-    </>
-  );
-};
-interface FormProps<T> {
-  values: T;
-  children: (values: T) => JSX.Element;
-}
 
-const Form = <T extends {}>({ values, children }: FormProps<T>) => {
-  return children(values);
+type Action =
+  | {
+      type: "INCREMENT";
+      value: number;
+    }
+  | {
+      type: "DECREMENT";
+      value: number;
+    };
+interface Counter {
+  count: number;
+}
+type State = Counter;
+
+const counterReducer = (state: State, action: Action) => {
+  switch (action.type) {
+    case "DECREMENT":
+      return (state = { count: state.count - action.value });
+    case "INCREMENT":
+      return (state = { count: state.count - action.value });
+    default:
+      return state;
+  }
 };
-const App = () => {
+
+const App: React.FC = () => {
+  const [state, dispatch] = useReducer(counterReducer, {
+    count: 0,
+  });
   return (
     <div className="app">
-      <Form<{ lastName: string | null }> values={{ lastName: "" }}>
-        {(values) => <div>{values.lastName}</div>}
-      </Form>
+      <h1>State</h1>
+      <code>
+        <pre>{JSON.stringify(state, null, 2)}</pre>
+      </code>
+      <button
+        onClick={() =>
+          dispatch({
+            type: "INCREMENT",
+            value: 5,
+          })
+        }
+      >
+        increment
+      </button>
+      <br />
+      <button
+        onClick={() => {
+          dispatch({
+            type: "DECREMENT",
+            value: 4,
+          });
+        }}
+      >
+        decrement
+      </button>
     </div>
   );
 };

@@ -181,3 +181,144 @@ const App: React.FC = () => {
 };
 export default App;
 ```
+
+### Hooks Types
+
+1. `useState<T>()`
+   Let's create a simple counter that will change the state when the button is clicked. Using the `useState`hook we can change the counter by doing it as follow:
+
+```ts
+import React, { useState } from "react";
+import "./main.ts";
+
+interface CounterType {
+  count: number;
+}
+const App: React.FC = () => {
+  const [counter, setCounter] = useState<CounterType>({
+    count: 0,
+  });
+  return (
+    <div className="app">
+      <h1>{counter.count}</h1>
+      <button
+        onClick={() =>
+          setCounter((prev) => ({
+            count: prev.count + 1,
+          }))
+        }
+      >
+        Increment
+      </button>
+    </div>
+  );
+};
+
+export default App;
+```
+
+2. `useRef<T>()`
+   Let's create a simple application i guess which when we hover over an input element it will trigger the click handler of a button using `useRef()` hook.
+
+```ts
+import React, { useRef } from "react";
+import "./main.ts";
+const App: React.FC = () => {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const alertMessage = (): void => {
+    alert("Hello world");
+  };
+  return (
+    <div className="app">
+      <input
+        type="text"
+        onMouseEnter={() => {
+          buttonRef.current?.click();
+        }}
+      />
+
+      <button ref={buttonRef} onClick={alertMessage}>
+        Alert
+      </button>
+    </div>
+  );
+};
+export default App;
+```
+
+**Where did i get the `HTMLButtonElement` type?**. If you are using `VScode` you just hover of the `ref` attribute of the html element that you want to pass reference. By doing so you will be able to see the type.
+
+The `HTMLDivElement` type...
+
+```tsx
+const divRef = useRef<HTMLDivElement | undefined>(null);
+```
+
+3. `useReducer<T>`
+
+We can think the `useReducer()` hook as a hook that allows us to create state in our react application. Let's create a `counterReducer` that will allow us to update the `count` value in the reducer.
+
+```tsx
+import React, { useReducer } from "react";
+import "./main.ts";
+
+type Action =
+  | {
+      type: "INCREMENT";
+      value: number;
+    }
+  | {
+      type: "DECREMENT";
+      value: number;
+    };
+interface Counter {
+  count: number;
+}
+type State = Counter;
+const counterReducer = (state: State, action: Action) => {
+  switch (action.type) {
+    case "DECREMENT":
+      return (state = { count: state.count - action.value });
+    case "INCREMENT":
+      return (state = { count: state.count - action.value });
+    default:
+      return state;
+  }
+};
+const App: React.FC = () => {
+  const [state, dispatch] = useReducer(counterReducer, {
+    count: 0,
+  });
+  return (
+    <div className="app">
+      <h1>State</h1>
+      <code>
+        <pre>{JSON.stringify(state, null, 2)}</pre>
+      </code>
+      <button
+        onClick={() =>
+          dispatch({
+            type: "INCREMENT",
+            value: 5,
+          })
+        }
+      >
+        increment
+      </button>
+      <br />
+      <button
+        onClick={() => {
+          dispatch({
+            type: "DECREMENT",
+            value: 4,
+          });
+        }}
+      >
+        decrement
+      </button>
+    </div>
+  );
+};
+export default App;
+```
