@@ -322,3 +322,56 @@ const App: React.FC = () => {
 };
 export default App;
 ```
+
+### Unions.
+
+Joining types in typescript.
+
+The `|` operator. **This is an or operator which allows us to create a type from either one or another.**
+
+```ts
+interface User {
+  username: string;
+  password: string;
+}
+interface Profile {
+  username: string;
+  photoUrl: string;
+}
+
+type UserProfile = User | Profile;
+const ourUser: UserProfile = {
+  username: "",
+  photoUrl: "",
+};
+```
+
+Similar this is the same as saying:
+
+```ts
+const user: undefined | string | number | null | boolean;
+```
+
+We can use more than one type. So the above expression is saying a user is of type string, undefined , number, null or boolean.
+
+The `&` operator. **This operator allows us to join two types together.** Example:
+
+```ts
+interface User {
+  username: string;
+  password: string;
+}
+interface Profile {
+  username: string;
+  photoUrl: string;
+}
+
+type UserProfile = User & Profile;
+const ourUser: UserProfile = {
+  username: "",
+  photoUrl: "",
+  password: "",
+};
+```
+
+- TypeScript is happy with the creation of `ourUser` which has all the property of both `User` and `Profile`. **Note that the `User` type and `Profile` type have both username property which is a string so when we join the two types we only pass username of one type since they are duplicate properties.**
