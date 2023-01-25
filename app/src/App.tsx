@@ -1,21 +1,16 @@
 import React, { useReducer } from "react";
-import "./main.ts";
 
-interface User {
+type User = {
   username: string;
+  email: string;
   password: string;
-}
-interface Profile {
-  username: string;
-  photoUrl: string;
-}
-
-type UserProfile = User & Profile;
-const ourUser: UserProfile = {
-  username: "",
-  photoUrl: "",
-  password: "",
 };
+
+const user: Omit<User, "username"> = {
+  email: "hello@gmail.com",
+  password: "password",
+};
+console.log({ user });
 
 const App: React.FC = () => {
   return (

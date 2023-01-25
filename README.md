@@ -375,3 +375,201 @@ const ourUser: UserProfile = {
 ```
 
 - TypeScript is happy with the creation of `ourUser` which has all the property of both `User` and `Profile`. **Note that the `User` type and `Profile` type have both username property which is a string so when we join the two types we only pass username of one type since they are duplicate properties.**
+
+### Utility Types
+
+1.  `Partial<Type>` and `Required<Type>`
+
+Let's say we have a type `User` which looks as follows:
+
+```ts
+type User = {
+  username: string;
+  email: string;
+  password: string;
+};
+```
+
+To create a new user object of type `user` this means all the properties of the objects are required in-order for typescript to be our friend. So creating a user will require all the properties as follows:
+
+```ts
+const user: User = {
+  email: "email@gamil.com",
+  password: "password",
+  username: "hello",
+};
+```
+
+Let's say in our program we decided to make a user with optional properties for that we can use `Partial` built in type to wrap our `User` type to make all the field be optional as here is an example:
+
+```ts
+const user: Partial<User> = {
+  email: "email@gamil.com",
+  password: "password",
+};
+```
+
+So the `Partial` type generate the following new type on the `User` type.
+
+```ts
+type User = {
+  username?: string;
+  email?: string;
+  password?: string;
+};
+```
+
+The `Required` is the reverse of `Partial` in the sense that it makes all properties of an object to be `required`
+
+```ts
+type User = {
+  username?: string;
+  email?: string;
+  password?: string;
+};
+
+...
+const user: Required<User> = {
+    email: "email@gamil.com",
+    password: "password",
+    username: 'hello'
+};
+```
+
+The new `User` type will be generated and it will look as follows
+
+```ts
+type User = {
+  username: string;
+  email: string;
+  password: string;
+};
+```
+
+2. `Readonly<T>`
+
+Let's say we created an object `user` and make it `Readonly` this tells typescript that in this object's values won't be modified.
+
+```ts
+const user: Readonly<User> = {
+  email: "email@gamil.com",
+  password: "password",
+  username: "hello",
+};
+```
+
+If you try to change the email of the user for example `user.email = ''` then typescript will cry with the following error:
+
+```shell
+Cannot assign to 'email' because it is a read-only property.
+```
+
+3. `Record<Keys, Type>`
+
+Record allows us to create an object with keys and values as types. Let's take a look at the following example:
+
+```ts
+type User = {
+  username: string;
+  email: string;
+  password: string;
+};
+
+type Users = "user1" | "user2" | "user3" | "user4";
+const users: Record<Users, User> = {
+  user1: {
+    email: "user1@gmail.com",
+    password: "user1@gmail.com",
+    username: "user1@gmail.com",
+  },
+  user2: {
+    email: "user2@gmail.com",
+    password: "user2@gmail.com",
+    username: "user2@gmail.com",
+  },
+};
+```
+
+> Keys can only be one of the union values `Users` and values will be of type `User`.
+
+4. `Pick<Type, Keys>`
+
+Pick allows us to select the properties that we want in our object. Let's create a new object `user` and this user should only have `email` and `password`. We can do it as follows:
+
+```ts
+type User = {
+  username: string;
+  email: string;
+  password: string;
+};
+
+const user: Pick<User, "email" | "password"> = {
+  email: "hello@gmail.com",
+  password: "password",
+};
+console.log({ user });
+```
+
+5. `Omit<Type, Keys>`
+
+Just like pick this is the opposite, it allows us to ommit the properties that are selected from a type. Let's create a user of type `User` with no `username` property
+
+```ts
+type User = {
+  username: string;
+  email: string;
+  password: string;
+};
+
+const user: Omit<User, "username"> = {
+  email: "hello@gmail.com",
+  password: "password",
+};
+console.log({ user });
+```
+
+6. `Exclude<UnionType, ExcludedMembers>`
+
+Constructs a type by excluding from `UnionType` all union members that are assignable to `ExcludedMembers`.
+
+```ts
+type UsernameOrPassword = Exclude<"username" | "email" | "password", "email">;
+
+const email: UsernameOrPassword = "password";
+```
+
+7. `Extract<Type, Union>`
+
+This is the opposite of `Exclude`, it allows us to extract a union from the one that are available rather than excluding them
+
+```ts
+type UsernameOrPassword = Extract<"username" | "email" | "password", "email">;
+
+const email: UsernameOrPassword = "email";
+```
+
+8. `NonNullable<Type>`
+
+Construct a type by removing `null` & `undefined` from a type:
+
+```ts
+type T = NonNullable<number | undefined | null | string | []>;
+
+// type T = string | number | []
+```
+
+9. `Uppercase`
+   Construct a layer on top of a primitive type `string` and make sure that all characters in the string are `uppercase`.
+
+```ts
+type T = Uppercase<string>;
+const a: T = "HELLO";
+```
+
+> There's also `Lowercase<StringType>`, `Capitalize<StringType>` and `Uncapitalize<StringType>`
+
+You can look at more utility types [here](https://www.typescriptlang.org/docs/handbook/utility-types.html#instancetypetype)
+
+### References
+
+1. [typescriptlang.org](https://www.typescriptlang.org/docs/handbook)
