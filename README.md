@@ -558,8 +558,36 @@ type T = NonNullable<number | undefined | null | string | []>;
 // type T = string | number | []
 ```
 
-9. `Uppercase`
-   Construct a layer on top of a primitive type `string` and make sure that all characters in the string are `uppercase`.
+9. `ReturnType`
+
+Create or generated a type on return type of a function. Let's say we have a function that looks as follows:
+
+```ts
+const getUser = () => {
+  return {
+    username: "username",
+    id: 1,
+    email: "username@gmail.com",
+    age: 19,
+  };
+};
+
+type GetUserType = ReturnType<typeof getUser>;
+```
+
+Therefore `GetUserType` will be:
+
+```ts
+type GetUserType = {
+  username: string;
+  id: number;
+  email: string;
+  age: number;
+};
+```
+
+10. `Uppercase`
+    Construct a layer on top of a primitive type `string` and make sure that all characters in the string are `uppercase`.
 
 ```ts
 type T = Uppercase<string>;

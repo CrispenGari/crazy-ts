@@ -1,16 +1,15 @@
 import React, { useReducer } from "react";
 
-type User = {
-  username: string;
-  email: string;
-  password: string;
+const getUser = () => {
+  return {
+    username: "username",
+    id: 1,
+    email: "username@gmail.com",
+    age: 19,
+  };
 };
 
-const user: Omit<User, "username"> = {
-  email: "hello@gmail.com",
-  password: "password",
-};
-console.log({ user });
+type GetUserType = ReturnType<typeof getUser>;
 
 const App: React.FC = () => {
   return (
