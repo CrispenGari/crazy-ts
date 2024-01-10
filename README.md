@@ -598,6 +598,61 @@ const a: T = "HELLO";
 
 You can look at more utility types [here](https://www.typescriptlang.org/docs/handbook/utility-types.html#instancetypetype)
 
+### Type Predicates
+Let's say we have 2 types a User and an Employee and they looks as follows:
+
+```ts
+interface User{
+    id: number,
+    name: string
+}
+type Employee = User & {
+email: string
+}
+const people: (User|Employee)[] = [{id: 1, name: 'Jonh'}, {id: 2, name: 'Peter', email: 'user@gmail.com'}]
+```
+In this case we can check if the user is an employee by just checking the property "email" in the object as follows:
+
+```ts
+people.forEach(person=>{
+    if("email" in person){
+        // this is an employee
+        console.log("I am an employee: ", person.email)
+    }else{
+        // this will be a regular user
+        console.log("I'm a regular user.")
+    }
+})
+```
+But now if we want to create a utility function that will check if the person is an `employee` or a regular `user` as follows:
+
+```ts
+const isEmployee = (person: User|Employee) => "email" in person
+people.forEach(person=>{
+    if(isEmployee(person)){
+        // this is an employee
+        console.log("I am an employee: ", person.email)
+    }else{
+        // this will be a regular user
+        console.log("I'm a regular user.")
+    }
+})
+```
+Typescript won't be happy with the return type. We can use the type predicate to predict the return type of this function using `is` and the type that we want to check if it iffers to it as follows:
+
+```ts
+const isEmployee = (person: User|Employee): person is Employee => "email" in person
+
+people.forEach(person=>{
+    if(isEmployee(person)){
+        // this is an employee
+        console.log("I am an employee: ", person.email)
+    }else{
+        // this will be a regular user
+        console.log("I'm a regular user.")
+    }
+})
+```
 ### References
 
 1. [typescriptlang.org](https://www.typescriptlang.org/docs/handbook)
