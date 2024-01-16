@@ -1,21 +1,18 @@
-import React, { useReducer } from "react";
+import React from "react";
 
-const getUser = () => {
-  return {
-    username: "username",
-    id: 1,
-    email: "username@gmail.com",
-    age: 19,
-  };
+type AutoComplete<T extends string> = T | Omit<string, T>;
+type Color = AutoComplete<"red" | "green">;
+interface AProps {
+  color: Color;
+}
+const Avatar = (props: AProps) => {
+  return <></>;
 };
-
-type GetUserType = ReturnType<typeof getUser>;
-
-const App: React.FC = () => {
+const App = () => {
   return (
-    <div className="app">
-      <h1>Unions</h1>
-    </div>
+    <>
+      <Avatar color="red" />
+    </>
   );
 };
 

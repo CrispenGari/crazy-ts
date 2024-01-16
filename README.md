@@ -599,60 +599,360 @@ const a: T = "HELLO";
 You can look at more utility types [here](https://www.typescriptlang.org/docs/handbook/utility-types.html#instancetypetype)
 
 ### Type Predicates
+
 Let's say we have 2 types a User and an Employee and they looks as follows:
 
 ```ts
-interface User{
-    id: number,
-    name: string
+interface User {
+  id: number;
+  name: string;
 }
 type Employee = User & {
-email: string
-}
-const people: (User|Employee)[] = [{id: 1, name: 'Jonh'}, {id: 2, name: 'Peter', email: 'user@gmail.com'}]
+  email: string;
+};
+const people: (User | Employee)[] = [
+  { id: 1, name: "Jonh" },
+  { id: 2, name: "Peter", email: "user@gmail.com" },
+];
 ```
+
 In this case we can check if the user is an employee by just checking the property "email" in the object as follows:
 
 ```ts
-people.forEach(person=>{
-    if("email" in person){
-        // this is an employee
-        console.log("I am an employee: ", person.email)
-    }else{
-        // this will be a regular user
-        console.log("I'm a regular user.")
-    }
-})
+people.forEach((person) => {
+  if ("email" in person) {
+    // this is an employee
+    console.log("I am an employee: ", person.email);
+  } else {
+    // this will be a regular user
+    console.log("I'm a regular user.");
+  }
+});
 ```
+
 But now if we want to create a utility function that will check if the person is an `employee` or a regular `user` as follows:
 
 ```ts
-const isEmployee = (person: User|Employee) => "email" in person
-people.forEach(person=>{
-    if(isEmployee(person)){
-        // this is an employee
-        console.log("I am an employee: ", person.email)
-    }else{
-        // this will be a regular user
-        console.log("I'm a regular user.")
-    }
-})
+const isEmployee = (person: User | Employee) => "email" in person;
+people.forEach((person) => {
+  if (isEmployee(person)) {
+    // this is an employee
+    console.log("I am an employee: ", person.email);
+  } else {
+    // this will be a regular user
+    console.log("I'm a regular user.");
+  }
+});
 ```
+
 Typescript won't be happy with the return type. We can use the type predicate to predict the return type of this function using `is` and the type that we want to check if it iffers to it as follows:
 
 ```ts
-const isEmployee = (person: User|Employee): person is Employee => "email" in person
+const isEmployee = (person: User | Employee): person is Employee =>
+  "email" in person;
 
-people.forEach(person=>{
-    if(isEmployee(person)){
-        // this is an employee
-        console.log("I am an employee: ", person.email)
-    }else{
-        // this will be a regular user
-        console.log("I'm a regular user.")
-    }
-})
+people.forEach((person) => {
+  if (isEmployee(person)) {
+    // this is an employee
+    console.log("I am an employee: ", person.email);
+  } else {
+    // this will be a regular user
+    console.log("I'm a regular user.");
+  }
+});
 ```
+
+### Advanced TS
+
+In this section of the readme we are going to document some advanced typescript features that every developer must know.
+
+### When to use generics?
+
+Generics are used when you don't know what type can be passed to a function or you have some logic in that function that rely on knowing that type. Let's take a look at the following example suppose we have a function that takes in argument of type `Animal` or `Human` and print the display name of that item we could do it this way:
+
+```ts
+interface Animal {
+  name: string;
+}
+interface Human {
+  firstName: string;
+  lastName: string;
+}
+
+const getDisplayName = <ItemType extends Animal | Human>(item: ItemType) => {
+  if ("name" in item) {
+    return {
+      animalName: item.name,
+    };
+  }
+  return { personName: item.firstName };
+};
+
+const res1 = getDisplayName({ name: "hi" });
+const res2 = getDisplayName({ firstName: "jonh", lastName: "doe" });
+```
+
+But the return type for `res1` and `res2` is a union that looks as follows:
+
+```ts
+const res1|res2:
+  | {
+      animalName: string;
+      personName?: undefined;
+    }
+  | {
+      personName: string;
+      animalName?: undefined;
+    };
+```
+
+We can infer the return type of this function using the `extends` keyword as follows
+
+```ts
+const getDisplayName = <ItemType extends Animal | Human>(
+  item: ItemType
+): ItemType extends Human
+  ? {
+      personName: string;
+    }
+  : { animalName: string } => {
+  if ("name" in item) {
+    return {
+      animalName: item.name,
+    };
+  }
+  return { personName: item.firstName };
+};
+
+const res1 = getDisplayName({ name: "hi" });
+const res2 = getDisplayName({ firstName: "jonh", lastName: "doe" });
+```
+
+Now the return types for each one will change to:
+
+```ts
+const res1: {
+  animalName: string;
+};
+// and
+const res2: {
+  personName: string;
+};
+```
+
+### Removing a union member in Ts
+
+In the following example we are going to demostrate how to remove a union member in ts. Let's say we have a union that contains `"car" | "dog" |"bike"` and let's say we want to remove a `dog` from this union we can do it as follows.
+
+```ts
+type ItemType = "car" | "dog" | "bike";
+type RemoveDog<TType> = TType extends "dog" ? never : TType;
+type ObjectsType = RemoveDog<ItemType>;
+```
+
+This process is known as distributivity. ObjectType will contain `"car" | "bike"`. We can return a union type like `"car" | "bike" | "bus" | "truck"` from the `ItemType` by changing `never` to `bus | truck` as follows:
+
+```ts
+type ItemType = "car" | "dog" | "bike";
+type RemoveDog<TType> = TType extends "dog" ? "bus" | "truck" : TType;
+type ObjectsType = RemoveDog<ItemType>;
+```
+
+### React Props to a component
+
+Let's say we have a component called `Avatar` that takes in color as prop of type `"red"|"green"` you also want this component to accept other colors that are string. We can do it as follows:
+
+```tsx
+type Color = "red" | "green";
+interface AProps {
+  color: Color;
+}
+const Avatar = (props: AProps) => <></>;
+const App = () => {
+  return (
+    <>
+      <Avatar color="red" />
+    </>
+  );
+};
+export default App;
+```
+
+If we were to say `type Color = "red" | "green" | string` we will lose the auto completion and if we remove the `string` we will only be able to pass either `green` or `red`. So to get around this we change our type Color to:
+
+```ts
+type Color = "red" | "green" | Omit<string, "red" | "green">;
+```
+
+With this type we can pass either `"red" | "green"` or an string. We can futher on create a type wrapper
+
+```ts
+type AutoComplete<T extends string> = T | Omit<string, T>;
+type Color = AutoComplete<"red" | "green">;
+```
+
+### Dynamic Function Arguments
+
+Let's say we have a type called `Event` with allows the user to `LOGIN` or `LOGOUT` with optional payload we can do it as follows:
+
+```ts
+type EventType = { type: "LOGIN"; payload: { id: 1 } } | { type: "LOGOUT" };
+const sendEvent = (e: EventType["type"], payload?: any) => {};
+
+sendEvent("LOGOUT");
+sendEvent("LOGIN");
+```
+
+But we are sending `LOGIN` with no payload of which it should be sent when calling this `sendEvent` function. The reason is because in our function payload is `optional` we can fix this by doing this:
+
+```ts
+type EventType =
+  | { type: "LOGIN"; payload: { id: number } }
+  | { type: "LOGOUT" };
+
+const sendEvent = <Type extends EventType["type"]>(
+  ...args: Extract<EventType, { type: Type }> extends {
+    payload: infer TPayload;
+  }
+    ? [Type, TPayload]
+    : [Type]
+) => {};
+
+sendEvent("LOGOUT");
+sendEvent("LOGIN", { id: 5 });
+```
+
+Here we are infering the type from the args that we will get. If there is payload in the args we extract it otherwise we are only going to get a type. But you will nortice that our `sendEvent` function will take `args_1` and `args_2` of which you don't want. We can use named `tuple` for our `Type` and `TPayload` as follows:
+
+```ts
+type EventType =
+  | { type: "LOGIN"; payload: { id: number } }
+  | { type: "LOGOUT" };
+
+const sendEvent = <Type extends EventType["type"]>(
+  ...args: Extract<EventType, { type: Type }> extends {
+    payload: infer TPayload;
+  }
+    ? [type: Type, payload: TPayload]
+    : [type: Type]
+) => {};
+
+sendEvent("LOGOUT");
+sendEvent("LOGIN", { id: 5 });
+```
+
+### "noUncheckedIndexedAccess"
+
+This is a typescript compiler option that allows us to check for indexed access. Let's say we have an object that looks as follows:
+
+```ts
+const data: Record<string, number[]> = {};
+data.hi.push(2, 3, 5);
+```
+
+This should result in an error because we don't have a `hi` property in the object. But the compiler can not pick it up. We can change our compiler options to:
+
+```json
+{
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": true,
+    ...
+  }
+}
+```
+
+By adding this option typescript will show errors when we try that operation. We can solve this as follows:
+
+```ts
+const data: Record<string, number[]> = {};
+if (!data.hi) {
+  data.hi = [];
+}
+data.hi.push(2, 3, 5);
+```
+
+### TypeScript Globals
+
+### Decode Search Parameters
+
+### `extends` to constrain generics
+
+We can use the `extends` to to constrain generics. Let's say we have an object that user, and in this user we want to get a value using a method called `getDeepValue`
+
+```ts
+const user = {
+  id: 1,
+  username: "hi",
+  profile: { avatar: "hi.jpg" },
+  address: { country: "za" },
+};
+
+const getDeepValue = <Obj, Key1, Key2>(
+  Obj: Obj,
+  firstKey: Key1,
+  secondKey: Key2
+) => ({} as any);
+const res = getDeepValue(user, "profile", "avatar");
+```
+
+Here the result is of type `any` and we don't get auto completion. We can solve this issue by doing it as follows.
+
+```ts
+const getDeepValue = <
+  Obj,
+  Key1 extends keyof Obj,
+  Key2 extends keyof Obj[Key1]
+>(
+  obj: Obj,
+  firstKey: Key1,
+  secondKey: Key2
+): Obj[Key1][Key2] => ({} as any);
+
+const res = getDeepValue(user, "profile", "avatar");
+```
+
+Now we will be able to get `auto-completion` and the `res` will be type-safe.
+
+### Function Overloads
+
+In this section we are going to have a look at how we can do functional over-loading in typescript.
+
+```ts
+function compose<Input, FirstArg>(
+  func: (input: Input) => FirstArg
+): (input: Input) => FirstArg;
+
+function compose<Input, FirstArg, SecondArg>(
+  func: (input: Input) => FirstArg,
+  fun2: (input: FirstArg) => SecondArg
+): (input: FirstArg) => SecondArg;
+
+function compose<Input, FirstArg, SecondArg, ThirArg>(
+  func: (input: Input) => FirstArg,
+  fun2: (input: FirstArg) => SecondArg,
+  func3: (input: SecondArg) => ThirArg
+): (input: SecondArg) => ThirArg;
+
+function compose(...args: any[]) {
+  return {} as any;
+}
+
+const addOne = (a: number) => a + 1;
+const toStrng = (a: number) => a.toString();
+const toNumber = (a: string) => Number(a);
+
+const res1 = compose(addOne); // number
+const res2 = compose(addOne, toStrng); // string
+const res3 = compose(addOne, toStrng, toNumber); // number
+```
+
+1. The first signature takes in an input and a function and returns that function
+2. The second function takes a previous input which is a function and return another function
+
+> **Note**: All the function that will be overloaded should be exported or not exported at all. Meaning that you can not export 1 of them and leave others, if you decide to export 1 export all of them.
+
+### Extracting React Props
+
 ### References
 
 1. [typescriptlang.org](https://www.typescriptlang.org/docs/handbook)
