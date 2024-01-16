@@ -1,17 +1,18 @@
 import React from "react";
-
-type AutoComplete<T extends string> = T | Omit<string, T>;
-type Color = AutoComplete<"red" | "green">;
-interface AProps {
-  color: Color;
+interface TProps<TItem> {
+  items: Array<TItem>;
+  renderItem: (item: TItem) => React.ReactNode;
 }
-const Avatar = (props: AProps) => {
-  return <></>;
-};
+function Table<TItem>(props: TProps<TItem>) {
+  return null;
+}
 const App = () => {
   return (
     <>
-      <Avatar color="red" />
+      <Table
+        items={[{ id: "2", name: "hey" }]}
+        renderItem={(item) => <p>{item.id}</p>}
+      />
     </>
   );
 };

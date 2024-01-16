@@ -953,6 +953,96 @@ const res3 = compose(addOne, toStrng, toNumber); // number
 
 ### Extracting React Props
 
+In react sometime we will want to extract components props. Suppose we have a class-based and functional based components. And from these components we want to extract prop types we can do it as follows.
+
+```ts
+import React from "react";
+
+class CBC extends React.Component<{ userId: number; name: string }> {
+  render(): React.ReactNode {
+    return null;
+  }
+}
+type PropsFrom<TComponent> = TComponent extends React.FC<infer Props>
+  ? Props
+  : TComponent extends React.Component<infer Props>
+  ? Props
+  : never;
+
+const FBC = (props: { enabled: boolean }) => null;
+const props: PropsFrom<typeof FBC> = {
+  enabled: true
+};
+const props2: PropsFrom<typeof CBC> = {userId: 6; name: 'hi'};
+```
+
+We created a type helper `PropsFrom` that allows us to extract the props from our components.
+
+### Getting Object Keys
+
+In javascript we use the `object.keys()` function to get the keys of an object. Let's say we have the following user object and we want to iterate through the object keys and print it's value. We can do it as follows in javascript:
+
+```ts
+const user = { name: "hi", age: 10, id: 5 };
+Object.keys(user).forEach((key) => console.log(user[key]));
+```
+
+But in typescript we can create our own `objectKeys` function that will be typesafe as follows:
+
+```ts
+const user = { name: "hi", age: 10, id: 5 };
+const objectKeys = <Obj extends Object>(ob: Obj): (keyof Obj)[] => {
+  return Object.keys(ob) as (keyof Obj)[];
+};
+objectKeys(user).forEach((key) => console.log(user[key]));
+```
+
+### Generics in React Components
+
+In this section we are going to use generics in React-componets. Let's say we have a component `Table` and this component takes in the `renderItem` component and `items` as props.
+
+```tsx
+import React from "react";
+interface TProps<TItem> {
+  items: Array<TItem>;
+  renderItem: (item: TItem) => React.ReactNode;
+}
+function Table<TItem>(props: TProps<TItem>) {
+  return null;
+}
+const App = () => {
+  return (
+    <>
+      <Table
+        items={[{ id: "2", name: "hey" }]}
+        renderItem={(item) => <p>{item.id}</p>}
+      />
+    </>
+  );
+};
+
+export default App;
+```
+
+By making the `TProps` to accept generics we can be able to type safely render our item as follows.
+
+### Removing Object Keys
+
+In the following example we are going to learn how to remove `object-keys` and still remain typesafe. We want to remove the `password` in the `user` object. We can do it as follows:
+
+```ts
+const user = { name: "hi", age: 10, id: 5, password: "pass" };
+const removeKeys =
+  <Key extends string>(keys: Key[]) =>
+  <Obj>(obj: Obj): Omit<Obj, Key> => {
+    return {} as any;
+  };
+const keyRemover = removeKeys(["password"]);
+const safe = keyRemover(user);
+```
+
+> So remove keys takes in an array of strings and returns a function which omits the specified keys in an object.
+
 ### References
 
 1. [typescriptlang.org](https://www.typescriptlang.org/docs/handbook)
