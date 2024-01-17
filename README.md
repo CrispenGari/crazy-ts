@@ -1043,6 +1043,317 @@ const safe = keyRemover(user);
 
 > So remove keys takes in an array of strings and returns a function which omits the specified keys in an object.
 
+### Building TS Libraries
+
+You can use the `preconstruct` CLI to fix the packages.json for you before you publish your npm/yarn package. All you have to do is to install the `cli` by running the following command:
+
+```shell
+yarn add --dev @preconstruct/cli
+```
+
+Then you can fix the `package.json` by running the following command.
+
+```shell
+yarn preconstruct fix
+```
+
+After that you can build your `package` by running the command:
+
+```shell
+yarn preconstruct build
+```
+
+You can add the `build` command in the `package.json` file as follows:
+
+```json
+{
+  "scripts": {
+    "build": "yarn preconstruct build"
+  }
+}
+```
+
+> You can read more: https://github.com/preconstruct/preconstruct
+
+### Literal Types
+
+Declaring and assigning variable with a keyword `let` allows the variable to chance. However if you use the `const` keyword the variables will not change. This works perfect with primitive type. But with arrays the following variables that we are trying to modify.
+
+```ts
+let age = 20;
+const name = "hey";
+
+const names = ["marry", "jonh", "petter"];
+names[0] = "heys"; // ts is happy
+const user = {
+  id: 3,
+  name: "hello",
+  age: 16,
+  gender: "m",
+  isHappy: true,
+};
+user.isHappy = false; // ts is also happy
+```
+
+If we don't want to allow change of values of arrays and object we can then cast to `const` as follows;
+
+```ts
+const names = ["marry", "jonh", "petter"] as const;
+const user = {
+  id: 3,
+  name: "hello",
+  age: 16,
+  gender: "m",
+  isHappy: true,
+} as const;
+```
+
+This will result in `readonly` properties for our object and array. Here are the type output for each variable:
+
+```ts
+const names: readonly ["marry", "jonh", "petter"];
+const user: {
+  readonly id: 3;
+  readonly name: "hello";
+  readonly age: 16;
+  readonly gender: "m";
+  readonly isHappy: true;
+};
+```
+
+### Index Access Types
+
+Let's say we have the following types:
+
+```ts
+type Role = ["Admin", "User", "Super-User"];
+
+interface Colors {
+  primary: "primary";
+  secondary: "secondary";
+  tertiary: "tertiary";
+}
+
+interface UserRole {
+  user: ["view", "create", "update"];
+  superAdmin: ["view", "create", "update", "delete"];
+}
+```
+
+We can extract the types from the above types using the power of indexed access types as follows:
+
+```ts
+type AdimOrUser = Role[0 | 1]; // type AdimOrUser = "Admin" | "User"
+type AllRoles = Role[number]; // type AllRoles = "Admin" | "User" | "Super-User"
+
+type PrimaryColor = Colors["primary"]; // type PrimaryColor = "primary"
+type NonPrimaryColor = Colors["secondary" | "tertiary"]; // type NonPrimaryColor = "secondary" | "tertiary";
+type AllColors = Colors[keyof Colors]; // type AllColors = "primary" | "secondary" | "tertiary"
+
+type Roles = UserRole[keyof UserRole][number]; // type Roles = "view" | "create" | "update" | "delete"
+```
+
+### Fixing Objects with infer and template literals
+
+Let's say our `API` is returning the following type:
+
+```ts
+interface ApiData {
+  "maps:longitude": string;
+  "maps:latitude": string;
+}
+```
+
+We want to fix this so that this type will look as follows:
+
+```ts
+type DesiredShape = {
+  longitude: string;
+  latitude: string;
+};
+```
+
+First we are going to create a type helper called `RemoveMaps` which takes a generic T and extends to a `maps:{string}` but we want to infer the rest of the string after `maps:` so we will infer it's type as `U` this is done as follows:
+
+```ts
+type RemoveMaps<T> = T extends `maps:${infer U}` ? U : T;
+```
+
+Now we can create `RemoveMapsFromObj` helper type again that takes another generic `T` and pair the keys of the type with their respective type. We will then cast the keys `K` using the `RemoveMaps<T>` as follows and then we will get the desired type output in `DesiredShape` type.
+
+```ts
+type RemoveMapsFromObj<T> = {
+  [K in keyof T as RemoveMaps<K>]: T[K];
+};
+
+type DesiredShape = RemoveMapsFromObj<ApiData>;
+```
+
+### Turning Module to Type
+
+Let's say we have a file that contains some constants and this file is called `constants.ts` and have the following constants in it:
+
+```ts
+export const ADD_TODO = "ADD_TODO";
+export const REMOVE_TODO = "REMOVE_TODO";
+export const EDIT_TODO = "EDIT_TODO";
+```
+
+Our goal is to convert this in a union typescript type as follows. In our index.ts we are going to have the following:
+
+```ts
+export type ActionModule = typeof import("./constants");
+```
+
+This will yield the following:
+
+```ts
+const actions: ActionModule = {
+  ADD_TODO: "ADD_TODO",
+  EDIT_TODO: "EDIT_TODO",
+  REMOVE_TODO: "REMOVE_TODO",
+};
+```
+
+We can convert this to a union type as follows:
+
+```ts
+type ActionType = ActionModule[keyof ActionModule];
+```
+
+This will yield the following union type
+
+```ts
+type ActionType = "ADD_TODO" | "EDIT_TODO" | "REMOVE_TODO";
+```
+
+### Extracting Type from keys that starts with `a`
+
+Let's say we want to get the union type from an object type whose key starts with a. We can do it as follows:
+
+```ts
+type Obj = {
+  a: "0";
+  a1: "1";
+  a2: "2";
+  b: "0";
+  b1: "1";
+  b2: "2";
+};
+type ValueOfKeysStartingWithA<T> = {
+  [K in Extract<keyof T, `a${string}`>]: T[K];
+}[Extract<keyof T, `a${string}`>];
+
+type NewUnion = ValueOfKeysStartingWithA<Obj>;
+```
+
+This will yield `type NewUnion = "0" | "1" | "2"` however we are repeating our self in the helper type `ValueOfKeysStartingWithA` when we are saying "Extract<keyof T, `a${string}`>" We can solve this as follows:
+
+```ts
+type ValueOfKeysStartingWithA<
+  T,
+  _ExtractedKeys extends keyof T = Extract<keyof T, `a${string}`>
+> = {
+  [K in _ExtractedKeys]: T[K];
+}[_ExtractedKeys];
+type NewUnion = ValueOfKeysStartingWithA<Obj>;
+```
+
+We are giving `ValueOfKeysStartingWithA` 2 generics `T` and `_ExtractKeys` T being the type of the object that we are trying to extract values from and `_ExtractKeys` having a default type of **\_Extract<keyof T, `a${string}`>**.
+
+### Assertion Functions
+
+Let's say we are having a class called `AuthManager` in this class a contructor function takes in a `jwt` token which is a string or `undefined`.
+
+```ts
+export class AuthManager {
+  constructor(public jwt?: string) {}
+  createPost = (jwt: string, title: string) => {
+    this.assertIsAuth();
+    this.createPost(this.jwt, tittle);
+  };
+  assertIsAuth() {
+    if (!!!this.jwt) throw new Error("You are not authenticated.");
+  }
+}
+```
+
+When we create a method `assertIsAuth` we make sure that it checks if the token is defined as a string. Meaning that when we call ` this.assertIsAuth();` in the createPost method won't be happy with this. So to so `this.jwt` will be defined as string. However `this.jwt` is possibly undefined though we call ` this.assertIsAuth();` first before we call createPost. We can solve this issue by changing our `assertIsAuth` method to:
+
+```ts
+export class AuthManager {
+  constructor(public jwt?: string) {}
+  createPost = (jwt: string, title: string) => {
+    this.assertIsAuth();
+    this.createPost(this.jwt, title);
+  };
+  assertIsAuth(): asserts this is this & { jwt: string } {
+    if (!!!this.jwt) throw new Error("You are not authenticated.");
+  }
+}
+```
+
+### Deep Partials
+
+In this section we are going to create a helper type that allows us to create partials in a deep object. Reason for this is because if you will use typescript utility `Partial` it only go one level. But with the following helper type we can create partials for even deeper object.
+
+```ts
+type DeepPartial<Thing> = Thing extends Function
+  ? Thing
+  : Thing extends Array<infer InferredArrayMember>
+  ? DeepPartial<InferredArrayMember>
+  : Thing extends object
+  ? DeepPartial<Thing>
+  : Thing | undefined;
+
+interface DeepPartialArray<T> extends Array<DeepPartial<T>> {}
+type DeepPartialObject<T> = {
+  [K in keyof T]?: DeepPartial<T[K]>;
+};
+
+interface Post {
+  id: string;
+  meta: { name: string; desc: string };
+  comments: { text: string }[];
+}
+
+const post: DeepPartial<Post> = {
+  id: "1",
+};
+```
+
+### Custom Errors
+
+Let's say we have a function that compares to parameters if there are equal. And this functions throws an error if one of the args is of type array. We can do it as follows:
+
+```ts
+const compare = <T>(a: T, b: T): boolean => {
+  if (Array.isArray(a) || Array.isArray(b))
+    throw new Error("You can not compare two arrays.");
+  return a === b;
+};
+
+compare(1, 1);
+compare([], []);
+```
+
+This will work, as the function will throw an error at runtime. We can take this to a compiler level so that it won't accept array arguments by creating another helper `CheckForArgs` and modify our function to:
+
+```ts
+type CheckForArgs<T> = T extends Array<any>
+  ? "You can not compare two arrays."
+  : T;
+
+const compare = <T>(a: CheckForArgs<T>, b: CheckForArgs<T>): boolean => {
+  if (Array.isArray(a) || Array.isArray(b))
+    throw new Error("You can not compare two arrays.");
+  return a === b;
+};
+
+compare(1, 1);
+compare([], []); // Error: Argument of type 'never[]' is not assignable to parameter of type '"You can not compare two arrays."'.
+```
+
 ### References
 
 1. [typescriptlang.org](https://www.typescriptlang.org/docs/handbook)
