@@ -1,11 +1,18 @@
-export {};
-
-type CheckForArgs<T> = T extends Array<any>
-  ? "You can not compare two arrays."
-  : T;
-
-const compare = <T>(a: CheckForArgs<T>, b: CheckForArgs<T>): boolean => {
-  if (Array.isArray(a) || Array.isArray(b))
-    throw new Error("You can not compare two arrays.");
-  return a === b;
+export const groupBy = <
+  TObj extends Record<string, unknown>,
+  TKey extends keyof TObj
+>(
+  arr: TObj[],
+  key: TKey
+) => {
+  const result = {} as Record<TObj[TKey] & PropertyKey, TObj[]>;
+  arr.forEach((ele) => {
+    const resolvedKey = ele[key] as TObj[TKey] & PropertyKey;
+    if (result[resolvedKey]) {
+      result[resolvedKey].push(ele);
+    } else {
+      result[resolvedKey] = [ele];
+    }
+  });
+  return result;
 };

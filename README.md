@@ -1354,6 +1354,205 @@ compare(1, 1);
 compare([], []); // Error: Argument of type 'never[]' is not assignable to parameter of type '"You can not compare two arrays."'.
 ```
 
+### Enum
+
+In this section we are going to talk about enum in typescript. They are not native in javascript so they were build in typescript. You can define an enum as follows in typescript.
+
+```ts
+enum Role {
+  ADMIN,
+  USER,
+} // result in {ADMIN: 0, 0: ADMIN, USER: 1, 1: USER}
+enum Role2 {
+  ADMIN = 0,
+  USER = 1,
+} // result in {ADMIN: 0, 0: ADMIN, USER: 1, 1: USER}
+enum Role3 {
+  ADMIN = "ADMIN",
+  USER = "USER",
+} // result in {ADMIN: 'ADMIN',  USER: 'USER'}
+```
+
+String enums are better than number enums. Enums behave weird look at the following behavior on `isAdmin` function
+
+```ts
+enum Role {
+  ADMIN = "ADMIN",
+  USER = "USER",
+}
+enum Role1 {
+  ADMIN = "ADMIN",
+  USER = "USER",
+}
+const isAdmin = (role: Role) => role === Role.ADMIN;
+
+isAdmin(Role.USER); // this works
+
+isAdmin(Role1.USER); // This doe not work
+isAdmin("ADMIN"); // this does not work
+```
+
+We also have `const` enum which looks as follows:
+
+```ts
+const enum Role {
+  ADMIN = "ADMIN",
+  USER = "USER",
+}
+const isAdmin = (role: Role) => role === Role.ADMIN;
+isAdmin(Role.USER); // this works
+```
+
+> **⚠: You should not use enums because of their behavior. However you can use const enums but never use them in library code because they behave differently depending on the compiler option passed.** I reccommend to use a plain javascript object. The following is an example of that:
+
+```ts
+const TRole = {
+  ADMIN: "ADMIN",
+  USER: "USER",
+} as const;
+type ObjectValues<T> = T[keyof T];
+type Role = ObjectValues<typeof TRole>; // type Role = "ADMIN" | "USER"
+
+const isAdmin = (role: Role) => role === TRole.ADMIN;
+isAdmin(TRole.ADMIN); // this works
+isAdmin("ADMIN"); // works
+```
+
+### The `infer` keyword.
+
+In order to understand the `infer` keyword we first need to understand what is a conditional type.
+
+```ts
+type T = true extends boolean ? 1 : 0; .// type T = 1
+```
+
+Let's say we have a function that we want to check the `return` type of it. We can use the `ReturnType` in typescript and here is how this function looks like under the hood:
+
+```ts
+type ReturnType<T extends (...args: any) => any> = T extends (
+  ...args: any
+) => infer R
+  ? R
+  : any;
+```
+
+Here is our `GetReturnType` generic that looks exactly the same is the typescript Return Type
+
+```ts
+const func = (name: boolean) => "hey" as const;
+type GetReturnType<T extends (...args: any) => any> = T extends (
+  ...args: any[]
+) => infer R
+  ? R
+  : never;
+type t = GetReturnType<typeof func>;
+```
+
+This means that if `T` extends `(...args: any[])` which basically means a function, we are going to infer what T returns. So if we try to pass boolean to `GetReturnType<boolean>` typescript will shout at us saying `Type 'boolean' does not satisfy the constraint '(...args: any) => any'`
+
+Let's create a `GetTypeFromObject` generic that takes a type `T` and returns the `return-type` of `C`
+
+```ts
+type GetTypeFromObject<T> = T extends
+  | {
+      a: {
+        b: {
+          c: infer R;
+        };
+      };
+    }
+  | {
+      a: {
+        c: infer R;
+      };
+    }
+  | {
+      c: infer R;
+    }
+  ? R
+  : never;
+
+type C = GetTypeFromObject<{ a: { b: { c: number } } }>; // c: number
+type C = GetTypeFromObject<{ a: { c: boolean } }>; // c: boolean
+type C = GetTypeFromObject<{ c: string }>; // c: string
+type C = GetTypeFromObject<{ a: string }>; // c: never
+```
+
+This is how we can infer the types in typescript.
+
+### Generics from external libraries
+
+We can use generics together with some external libraries, in this example we are going to use generics with `zod`. We are going to create a function that takes in `url` and a `schema`. This function takes in a generic type `TData` and fetch data from an api to return the `parsed` version of that data using `zod`
+
+```ts
+import { z } from "zod";
+const makeZodFetch = <TData>(
+  url: string,
+  schema: z.Schema<TData>
+): Promise<TData> => {
+  return fetch(url)
+    .then((res) => res.json())
+    .then((res) => schema.parse(res));
+};
+```
+
+Now when calling this function we need to pass the `url` and a `zod` schema that will infer the return type of this function.
+
+```ts
+makeZodFetch(
+  "/all/todos",
+  z.object({
+    firstName: z.string(),
+    age: z.number(),
+  })
+).then((res) => {
+  console.log(res);
+});
+```
+
+The `res` type will be of type: ` res: {firstName: string;age: number;}`
+
+### Debug types in VSCode
+
+We can debug the types in vscode using the vscode extension called [vscode-twoslash-queries](https://marketplace.visualstudio.com/items?itemName=Orta.vscode-twoslash-queries). Here is how you can use it:
+
+```ts
+const a = { name: "hi", age: 3 };
+console.log(a);
+//          ^?
+```
+
+> Note that the `^?` is aligned with `a` so it will show the type of a.
+
+### GroupBy
+
+Let's create our own `groupBy` function that takes in array of objects and a key and return the elements as an object that are grouped based on that key:
+
+```ts
+const groupBy = <TObj extends Record<string, unknown>, TKey extends keyof TObj>(
+  arr: TObj[],
+  key: TKey
+) => {
+  const result = {} as Record<TObj[TKey] & PropertyKey, TObj[]>;
+  arr.forEach((ele) => {
+    const resolvedKey = ele[key] as TObj[TKey] & PropertyKey;
+    if (result[resolvedKey]) {
+      result[resolvedKey].push(ele);
+    } else {
+      result[resolvedKey] = [ele];
+    }
+  });
+  return result;
+};
+const names = [
+  { name: "jonh", id: 5 },
+  { name: "jonh", id: 10 },
+  { name: "marry", id: 0 },
+];
+const grouped = groupBy(names, "name");
+console.log(grouped);
+```
+
 ### References
 
 1. [typescriptlang.org](https://www.typescriptlang.org/docs/handbook)
