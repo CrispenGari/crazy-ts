@@ -1,18 +1,27 @@
-export const groupBy = <
-  TObj extends Record<string, unknown>,
-  TKey extends keyof TObj
->(
-  arr: TObj[],
-  key: TKey
-) => {
-  const result = {} as Record<TObj[TKey] & PropertyKey, TObj[]>;
-  arr.forEach((ele) => {
-    const resolvedKey = ele[key] as TObj[TKey] & PropertyKey;
-    if (result[resolvedKey]) {
-      result[resolvedKey].push(ele);
-    } else {
-      result[resolvedKey] = [ele];
-    }
-  });
-  return result;
-};
+function log(
+  originalMethod: (...args: any[]) => any,
+  _context: ClassMethodDecoratorContext
+) {
+  return async function method(this: any, ...args: any[]) {
+    console.log(
+      `${_context.name.toString()} called with ${JSON.stringify(args)}`
+    );
+    const res = await originalMethod(this, ...args);
+    console.log(`${_context.name.toString()} finished`);
+    return res;
+  };
+}
+
+class SDK {
+  @log
+  public async getUser(id: number) {
+    return Promise.resolve({ id });
+  }
+  @log
+  public async getPost(id: number) {
+    return Promise.resolve({ id });
+  }
+}
+
+const sdk = new SDK();
+sdk.getPost(4);

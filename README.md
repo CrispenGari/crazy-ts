@@ -1553,6 +1553,44 @@ const grouped = groupBy(names, "name");
 console.log(grouped);
 ```
 
+### Decorators
+
+Typescript `5` has introduced decorators. Let's create a decorator function that will print the message to the console when it decorate the class method. We are going to call our method `log`. Here is what we can do with it:
+
+```ts
+function log(
+  originalMethod: (...args: any[]) => any,
+  _context: ClassMethodDecoratorContext
+) {
+  return async function method(this: any, ...args: any[]) {
+    console.log(
+      `${_context.name.toString()} called with ${JSON.stringify(args)}`
+    );
+    const res = await originalMethod(this, ...args);
+    console.log(`${_context.name.toString()} finished`);
+    return res;
+  };
+}
+
+class SDK {
+  @log
+  public async getUser(id: number) {
+    return Promise.resolve({ id });
+  }
+  @log
+  public async getPost(id: number) {
+    return Promise.resolve({ id });
+  }
+}
+const sdk = new SDK();
+sdk.getPost(4);
+```
+
+### Important TypeScript packages.
+
+1. [ts-reset](https://github.com/total-typescript/ts-reset)
+2.
+
 ### References
 
 1. [typescriptlang.org](https://www.typescriptlang.org/docs/handbook)
