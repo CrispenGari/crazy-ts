@@ -53,16 +53,49 @@ And then we are going to add the `build` command that will look as follows in ou
 ```json
 {
   "scripts": {
-    "build": "tsup index.ts --format cjs,ems --dts",
+    "build": "tsup index.ts --format esm,cjs --dts",
     "lint": "tsc"
   }
 }
 ```
 
-> We have added the `"lint"` command so that it can check for typescript errors in our project.
+> We have added the `"lint"` command so that it can check for typescript errors in our project. https://tsup.egoist.dev/#output-extension
 
 Now we can run the following command to build the package:
 
 ```shell
 yarn run build
 ```
+
+Next we are going to specify the `main`, `types` and `module` properties in our package.json so that it will look as follows:
+
+```json
+{
+  "name": "hello-world",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "build": "tsup index.ts --format esm,cjs --dts",
+    "lint": "tsc"
+  }
+}
+```
+
+Now we need to setup the versioning cli called [`changesets`](https://github.com/changesets/changesets/tree/main) for our package as follows:
+
+```shell
+yarn add @changesets/cli && yarn changeset init
+```
+
+The command `init` will add a `.changeset/config` and a `readme.md` file in your project folder.
+
+### Refs
+
+1. [tsup.egoist.dev](https://tsup.egoist.dev/#output-extension)
+2. [github.com/changesets](https://github.com/changesets/changesets/tree/main)

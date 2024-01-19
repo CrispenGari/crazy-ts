@@ -1,27 +1,15 @@
-function log(
-  originalMethod: (...args: any[]) => any,
-  _context: ClassMethodDecoratorContext
-) {
-  return async function method(this: any, ...args: any[]) {
-    console.log(
-      `${_context.name.toString()} called with ${JSON.stringify(args)}`
-    );
-    const res = await originalMethod(this, ...args);
-    console.log(`${_context.name.toString()} finished`);
-    return res;
-  };
-}
+import { GlobalReducer } from "./types";
 
-class SDK {
-  @log
-  public async getUser(id: number) {
-    return Promise.resolve({ id });
-  }
-  @log
-  public async getPost(id: number) {
-    return Promise.resolve({ id });
+declare global {
+  interface GlobalReducerEvent {
+    ADD_TODO: {
+      text: string;
+    };
   }
 }
-
-const sdk = new SDK();
-sdk.getPost(4);
+export const todoReducer: GlobalReducer<{ todo: { id: string }[] }> = (
+  state,
+  event
+) => {
+  return state;
+};

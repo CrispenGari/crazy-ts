@@ -1586,10 +1586,95 @@ const sdk = new SDK();
 sdk.getPost(4);
 ```
 
+### Decode search Params example
+
+In this example we are going to decode type-safe search params using [`ts-toolbelt`](https://github.com/millsp/ts-toolbelt) So here is how we are going to go about it:
+
+```ts
+import { String, Union } from "ts-toolbelt";
+const q = `/home?a=foo&b=bar`;
+type TQ = typeof q;
+type SecondPart = String.Split<TQ, "?">[1];
+type QueryElements = String.Split<SecondPart, "&">;
+```
+
+First we get the type of the query using the `typeof` and then split the string into array of parts and grab the parts that we want for query elements.
+
+```ts
+type QueryParams = {
+  [QueryElement in QueryElements[number]]: {
+    [Key in String.Split<QueryElement, "=">[0]]: String.Split<
+      QueryElement,
+      "="
+    >[1];
+  };
+}[QueryElements[number]];
+const obj: Union.Merge<QueryParams> = {
+  a: "foo",
+  b: "bar",
+};
+```
+
+The `QueryParams` function will then generate the type from the `QueryElements`. Now our object `obj` will be type safe.
+
+### Declare Globals
+
+Let's say we are have declared a global type for the event that will be passed into our reducer in the `types.ts` as follows:
+
+```ts
+// types.ts
+declare global {
+  interface GlobalReducerEvent {}
+}
+export type GlobalReducer<TState> = (
+  state: TState,
+  event: {
+    [EventType in keyof GlobalReducerEvent]: {
+      type: EventType;
+    } & GlobalReducerEvent[EventType];
+  }[keyof GlobalReducerEvent]
+) => TState;
+```
+
+We can modify our `GlobalReducerEvent` in `userReducer.ts`and pass the payload that we are passing for the event `LOG_IN` as follows:
+
+```ts
+// userReducer.ts
+import { GlobalReducer } from "./types";
+declare global {
+  interface GlobalReducerEvent {
+    LOG_IN: {};
+  }
+}
+export const userReducer: GlobalReducer<{ id: string }> = (state, event) => {
+  return state;
+};
+```
+
+Same applies we can modify our `GlobalReducerEvent` in `todoReducer.ts` the payload that we are passing for the event `ADD_TODO` as follows:
+
+```ts
+// todoReducer.ts
+import { GlobalReducer } from "./types";
+declare global {
+  interface GlobalReducerEvent {
+    ADD_TODO: {
+      text: string;
+    };
+  }
+}
+export const todoReducer: GlobalReducer<{ todo: { id: string }[] }> = (
+  state,
+  event
+) => {
+  return state;
+};
+```
+
 ### Important TypeScript packages.
 
 1. [ts-reset](https://github.com/total-typescript/ts-reset)
-2.
+2. [ts-toolbelt](https://github.com/millsp/ts-toolbelt)
 
 ### References
 
