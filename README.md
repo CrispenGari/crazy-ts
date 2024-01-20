@@ -1671,6 +1671,67 @@ export const todoReducer: GlobalReducer<{ todo: { id: string }[] }> = (
 };
 ```
 
+### Index Signatures
+
+Index signatures allows us to define the indexes and the types in a typescript type. Let's consiter the following type `TUser`:
+
+```ts
+interface TUser {
+  name: string;
+  age: number;
+  gender: "M" | "F";
+}
+const me: TUser = {
+  name: "hi",
+  age: 6,
+  gender: "F",
+};
+```
+
+With this we can not add elements that are not defined in the `TUser` to allow that to happen we are going to need to use what we call `index signatures` as follows.
+
+```ts
+type TGender = "M" | "F";
+interface TUser {
+  [key: string]: number | TGender | string;
+  name: string;
+  age: number;
+  gender: "M" | "F";
+}
+
+const me: TUser = {
+  name: "hi",
+  age: 6,
+  gender: "F",
+  phoneNumber: 0,
+};
+```
+
+So if we want to print the values of the object `me` in a loop we can do it as follows:
+
+```ts
+type TGender = "M" | "F";
+interface TUser {
+  [key: string]: number | TGender | string;
+  name: string;
+  age: number;
+  gender: "M" | "F";
+}
+
+const me: TUser = {
+  name: "hi",
+  age: 6,
+  gender: "F",
+  phoneNumber: 0,
+};
+
+for (const key in me) {
+  const _key = key as keyof TUser;
+  console.log(`${key}: ${me[_key]}`);
+}
+Object.keys(me).forEach((key) => console.log(me[key as keyof typeof me]));
+```
+
 ### Important TypeScript packages.
 
 1. [ts-reset](https://github.com/total-typescript/ts-reset)
