@@ -294,25 +294,57 @@ function watchChange<T, V>(
 
 ### Params Decorators
 
-These are decorators that works on the parameters of a function within a class.
+These are decorators that works on the parameters of a function within a class. With params decorators you should use experimental decorators from stage 2. Modify your `tsconfig.json` to
 
-```ts
-
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}
 ```
 
-```ts
-
-```
+Here is how we use it. Let's say we have a class called `Cat` and in this class we want to print the parameters that is decorated using the `logParamDec` decorator in the class method `me`. WE can do it as follows:
 
 ```ts
+class Cat {
+  me(@logParamDec name: string, age: number) {
+    console.log(`I am ${name} and ${age} is my age `);
+  }
+}
 
+const cat = new Cat();
+cat.me("jonh", 4);
+
+function logParamDec(
+  target: Object,
+  propertyKey: string,
+  parameterIndex: number
+) {
+  console.log("target:");
+  console.log(target);
+  console.log("propertyKey:");
+  console.log(propertyKey);
+  console.log("parameterIndex:");
+  console.log(parameterIndex);
+}
 ```
 
-```ts
+We will get the following in the console.
+
+```shell
+target:
+{}
+propertyKey:
+me
+parameterIndex:
+0
+I am jonh and 4 is my age
+Done in 1.69s.
 
 ```
-
-`ts`
 
 ### Refs
 
