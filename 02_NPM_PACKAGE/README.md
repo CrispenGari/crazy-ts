@@ -93,9 +93,138 @@ Now we need to setup the versioning cli called [`changesets`](https://github.com
 yarn add @changesets/cli && yarn changeset init
 ```
 
-The command `init` will add a `.changeset/config` and a `readme.md` file in your project folder.
+If you are getting an error saying:
+
+```
+"const stripAnsi = require("strip-ansi")
+                  ^
+
+Error [ERR_REQUIRE_ESM]: require() "
+```
+
+You will need to add `resolutions` in your package.json as follows:
+
+```json
+{ 
+  "resolutions": {
+    "strip-ansi": "6.0.1"
+  }
+}
+```
+And then rerun
+
+```shell
+yarn add @changesets/cli && yarn changeset init
+```
+The command `init` will add a `.changeset/config.json` and a `readme.md` file in your project folder. The `config.json` file looks as follows:
+
+```json
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [],
+  "access": "restricted",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}
+```
+Then next we are going to run the following commmand:
+
+```shell
+yarn changeset
+```
+> And answer some questions related to your package.
+
+
+Next we are going to add a github workflow by creating a file called `.github/workflows/main.yml`
+
+```yml
+name: CI
+on:
+  push:
+    branches:
+      - "**" # all branches
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Github Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Nodejs and NPM
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18x
+
+      - name: Install latest Yarn
+        run: corepack prepare yarn@stable --activate
+
+      - name: Activate latest Yarn
+        run: yarn set version stable
+
+      - name: Installing Packages using Yarn
+        run: yarn
+
+      - name: Linting and building
+        run: yarn lint && yarn build
+```
+
+
+
+Next we are going to create the `workflow` for publishing our package. We are going to call that workflow `publish.yml` and we will add the following code to it:\
+
+```yml
+name: Publish Package
+on:
+  push:
+    branches:
+      - main
+concurrency: ${{ github.workflow}}-${{github.ref}}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Github Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Nodejs and NPM
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18x
+
+      - name: Install latest Yarn
+        run: corepack prepare yarn@stable --activate
+
+      - name: Activate latest Yarn
+        run: yarn set version stable
+
+      - name: Installing Packages using Yarn
+        run: yarn
+
+      - name: Linting and building
+        run: yarn lint && yarn build
+
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          # This expects you to have a script called release which does a build for your packages and calls changeset publish
+          publish: yarn release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+Now if we can add and push our code to github our github actions should also runs.
 
 ### Refs
 
 1. [tsup.egoist.dev](https://tsup.egoist.dev/#output-extension)
 2. [github.com/changesets](https://github.com/changesets/changesets/tree/main)
+3. [changesets/action](https://github.com/changesets/action)
+4. [actions/checkout](https://github.com/actions/checkout)
+5. [actions/setup-node](https://github.com/actions/setup-node)

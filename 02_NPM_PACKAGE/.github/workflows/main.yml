@@ -1,0 +1,29 @@
+name: CI
+on:
+  push:
+    branches:
+      - "**" # all branches
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Github Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Nodejs and NPM
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18x
+
+      - name: Install latest Yarn
+        run: corepack prepare yarn@stable --activate
+
+      - name: Activate latest Yarn
+        run: yarn set version stable
+
+      - name: Installing Packages using Yarn
+        run: yarn
+
+      - name: Linting and building
+        run: yarn lint && yarn build
