@@ -1732,6 +1732,44 @@ for (const key in me) {
 Object.keys(me).forEach((key) => console.log(me[key as keyof typeof me]));
 ```
 
+### Visualizing types
+
+Suppose we have a giant type `TProfile` that extends various types as follows:
+
+```ts
+interface TNames {
+  firstName: string;
+  lastName: string;
+}
+interface TAge extends TNames {
+  age?: number;
+}
+interface TProfile extends TAge {
+  bio?: string;
+  gender: "M" | "F";
+}
+const user: TProfile = {
+  //     ^? const user: TProfile
+  lastName: "",
+  firstName: "",
+  gender: "M",
+};
+```
+
+We can see that type `user` is of type `TProfile`, but what if we want to visualize the whole type. We can create a type helper `Prettify` that can help us to visualize the `TProfile` as follows:
+
+```ts
+const user: Prettify<TProfile> = {
+  //     ^? const user: {bio?: string| undefined, gender: 'M'|'F', ....}
+  lastName: "",
+  firstName: "",
+  gender: "M",
+};
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+```
+
 ### Important TypeScript packages.
 
 1. [ts-reset](https://github.com/total-typescript/ts-reset)
