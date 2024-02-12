@@ -86,4 +86,29 @@ const h = new hi(24);
 console.log(h.addOne().addOne().getDOB());
 ```
 
+The following example shows how we can do method chaining of an object of a function.
+
+```ts
+const obj = function (name: string) {
+  this.name = name;
+  this.count = 0;
+};
+
+obj.prototype = {
+  increment: function (count: number) {
+    this.count += count;
+    return this;
+  },
+  decrement: function (count: number) {
+    this.count += count;
+    return this;
+  },
+  print: function () {
+    console.log(`The name ${this.name} has the following count: ${this.count}`);
+  },
+};
+const o = new obj("Hello");
+o.decrement(10).decrement(2).increment(16).print();
+```
+
 > Note that all the instances that we are chaining on returns the keyword `this`.
