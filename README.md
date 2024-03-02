@@ -367,11 +367,18 @@ interface Profile {
 }
 
 type UserProfile = User & Profile;
+
 const ourUser: UserProfile = {
   username: "",
   photoUrl: "",
   password: "",
 };
+```
+
+Alternatively you can do it as follows:
+
+```ts
+interface UserProfile extends User, Profile {},
 ```
 
 - TypeScript is happy with the creation of `ourUser` which has all the property of both `User` and `Profile`. **Note that the `User` type and `Profile` type have both username property which is a string so when we join the two types we only pass username of one type since they are duplicate properties.**
