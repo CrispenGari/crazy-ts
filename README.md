@@ -1777,6 +1777,38 @@ type Prettify<T> = {
 } & {};
 ```
 
+### `NoInfer` Utility
+
+Let's say we have a function called `createState` that takes in a generic `TState` and returns that state.
+
+```ts
+declare function createState<TState extends string>(config: {
+  initial: TState;
+  state: TState[];
+}): TState;
+
+const state = createState({
+  initial: "undefined",
+  state: ["on", "off"],
+});
+```
+
+But what we want is that the `initial` state of the `createState` should be in the values that have been passed in the `TState[]`. We can solve this by changing the above function to use `NoInfer` utility on the `initial` state as follows:
+
+```ts
+declare function createState<TState extends string>(config: {
+  initial: NoInfer<TState>;
+  state: TState[];
+}): TState;
+
+const state = createFSM({ initial: "off", state: ["on", "off"] });
+//      ^? const state: 'on'|'off'
+```
+
+Now `initial` can be either passed as `on` or `off`.
+
+> Note that this `NoInfer` is available on `typescript` version `5.4.0-beta`.
+
 ### Important TypeScript packages.
 
 1. [ts-reset](https://github.com/total-typescript/ts-reset)
