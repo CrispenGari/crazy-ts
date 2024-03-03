@@ -59,6 +59,48 @@ makeArray<string | undefined, number>(undefined, 9);
 makeArray<string | undefined, number | null>(undefined, 9);
 ```
 
+We can also use generics in Classes. Let's consider the following class `Hello`.
+
+```ts
+class Hello<TType> {
+  private props: TType;
+  constructor(props: TType) {
+    this.props = props;
+  }
+  getProps = () => this.props;
+}
+const hi = new Hello({ name: "John", age: 32, female: false });
+const info = hi.getProps();
+//      ^? const info: { name: string; age: number; female: boolean;}
+```
+
+This function takes in a generic `TType` which allows us to flexibly pass whatever we want in the constructor function and still be type-safe.
+
+Let's say we have a function `withFullName` that takes in a user object with properties firstName and lastName in it and returns a userObject with `fullName` in it.
+
+```ts
+const withFullName = (user: unknown) => {
+  return {
+    ...user,
+    fullName: user.firstName.concat(" ").concat(user.lastName),
+  };
+};
+```
+
+We can make this type-safe by creating a function that takes a user as a generic with `firstName` and `lastName` properties required.
+
+```ts
+type TNames = { firstName: string; lastName: string };
+const withFullName = <T extends TNames>(user: T) => {
+  return {
+    ...user,
+    fullName: user.firstName.concat(" ").concat(user.lastName),
+  };
+};
+const user = withFullName({ firstName: "John", lastName: "Doe", age: 10 });
+//      ^?const user: { firstName: string; lastName: string; age: number;} & { fullName: string; }
+```
+
 ### Working with Objects.
 
 Let's say we have an object that looks as follows:
@@ -1808,6 +1850,118 @@ const state = createFSM({ initial: "off", state: ["on", "off"] });
 Now `initial` can be either passed as `on` or `off`.
 
 > Note that this `NoInfer` is available on `typescript` version `5.4.0-beta`.
+
+### Parameter Passing.
+
+In our first example let's consider the following array of object:
+
+```ts
+const names = [
+  { name: "Alice", age: 10 },
+  { name: "Bob", age: 9 },
+];
+```
+
+And we want to use the `reduce` method to map it to the following object without typescript runtime errors:
+
+```ts
+const obj = {
+  Alice: {
+    name: "Alice",
+    age: 10,
+  },
+  Bob: {
+    name: "Bob",
+    age: 9,
+  },
+};
+```
+
+We can do it as follows:
+
+```ts
+type TPerson = (typeof names)[number];
+const obj = names.reduce<Record<string, TPerson>>((acc, name) => {
+  acc[name.name] = name;
+  return acc;
+}, {});
+```
+
+In our second example we are going to create a function that will return a type-safe object after fetching the data from an `API` using generics.
+
+```ts
+const fetchData = async <TData>(url: string) => {
+  const res = await fetch(url);
+  const data: TData = await res.json();
+  return data;
+};
+const main = async () => {
+  const data = await fetchData<{ name: string }>(
+    "https://swapi.dev/api/people/1"
+  );
+  //   ^? const data: {name: string}
+};
+```
+
+Let's consider the following object `user`.
+
+```ts
+const user = {
+  username: "jonhdoe",
+  name: "john",
+  email: "jonhdoe@gmail.com",
+  utils: {
+    website: "https://jonhdoe.com",
+    profile: {
+      avatar: "doe.jpg",
+      female: false,
+    },
+  },
+};
+```
+
+We want to create a function called `getProfile` that will extract the `profile` of this user which will be type safe. We can do it as follows:
+
+```ts
+const getProfile = <
+  TUser extends {
+    utils: {
+      profile: any;
+    };
+  },
+  V = TUser["utils"]["profile"]
+>(
+  user: TUser,
+  update: (profile: V) => V
+) => {
+  return update(user.utils.profile);
+};
+const p = getProfile(user, (p) => p);
+//    ^? const p: { avatar: string; female: boolean;}
+```
+
+You will also notice that even the `update` handler will be type-safe
+
+```ts
+const p = getProfile(user, (p) => ({ ...p, avatar: "me.jpg" }));
+```
+
+An alternative solution is to do it as follows:
+
+```ts
+const getProfile = <TProfile>(
+  user: {
+    utils: {
+      profile: TProfile;
+    };
+  },
+  update: (profile: TProfile) => TProfile
+) => {
+  return update(user.utils.profile);
+};
+
+const p = getProfile(user, (p) => ({ ...p, avatar: "me.jpg" }));
+```
 
 ### Important TypeScript packages.
 
