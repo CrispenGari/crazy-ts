@@ -13,6 +13,9 @@ In this readme we are going to have a look at how to implement some algorithms i
   - [2. prime](#2-prime)
   - [3. powerOfTwo](#3-poweroftwo)
 - [Recursion Algorithms](#recursion-algorithms)
+  - [1. factorial problem](#1-factorial-problem)
+  - [2. fibonacci problem](#2-fibonacci-problem)
+- [Searching Algorithm](#searching-algorithm)
 
 ### Time and Space Complexity Cheat-Sheet.
 
@@ -120,3 +123,37 @@ const powerOfTwo = (n: number) => {
 - Time complexity: **O(1)**
 
 ### Recursion Algorithms
+
+A recursive function is a function that calls itself in the function body. Let's have a look at some of the examples.
+
+> Note: Every recessive function should have a base case, which controls the termination of a function otherwise an infinite loop will arise.
+
+#### 1. factorial problem
+
+We are going to approach the factorial problem to find a factorial of `n` which is a positive integer greater than 0 using recursion.
+
+```ts
+const factorial = (n: number): number => {
+  if (n < 2) return 1;
+  return n * factorial(n - 1);
+};
+```
+
+- Time complexity: **O(n)**
+  > We can conclude that using iterative approach is the same as using the recursive approach in solving factorial problem.
+
+#### 2. fibonacci problem
+
+Let's use the recursive approach to find the `nth` fibonacci term
+
+```ts
+const fibonacci = (n: number): number => {
+  if (n < 2) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+};
+```
+
+- Time complexity: **O(2^n)**
+  > We can conclude that using iterative approach is better than using recessive approach when solving the fibonacci problem.
+
+### Searching Algorithm
