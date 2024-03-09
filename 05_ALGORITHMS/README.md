@@ -22,6 +22,9 @@ In this readme we are going to have a look at how to implement some algorithms i
     - [2.2 Recursive approach](#22-recursive-approach)
 - [Sorting Algorithm](#sorting-algorithm)
   - [1. Bubble Sort](#1-bubble-sort)
+  - [Insertion Sort](#insertion-sort)
+  - [Quick Sort](#quick-sort)
+  - [Merge Sort](#merge-sort)
 
 ### Time and Space Complexity Cheat-Sheet.
 
@@ -31,7 +34,7 @@ The following table contains a cheatsheet for time complexity and space complexi
 | ------------------------------------------- | -------------- | ------------- |
 | Alignment operations and conditional checks | `O(1)`         | `Constant`    |
 | Loops                                       | `O(n)`         | `Linear`      |
-| Nested loops                                | `O(n^2)`       | `Quadratic`   |
+| 2 Nested loops                              | `O(n^2)`       | `Quadratic`   |
 | Loops that reduces by half in the body      | `O(log(n))`    | `Logarithmic` |
 
 ### Math Algorithms
@@ -370,3 +373,219 @@ function bubbleSort(ele: number[]) {
   } while (swapped);
 }
 ```
+
+#### Insertion Sort
+
+Having an array of numbers we want to sort the numbers in either descending or ascending order. Here is how the insertion sort works.
+
+1. The array is split into two arrays a sorted and unsorted array.
+2. We assume that the first element in the array is sorted.
+3. Select an element in an unsorted array and compare it with the sorted part.
+4. If the elements in the sorted array is smaller than the selected we proceed to the next element in the unsorted array else we shift the elements in the sorted part towards the right
+5. We insert the selected element at the right index.
+6. We repeat the above steps till all the elements are sorted. Let's consider the following visualization.
+
+| -                 | -          | -          |                                     |
+| ----------------- | ---------- | ---------- | ----------------------------------- |
+| `[-6 20 8 -2 4]`  | `NTI` = 20 | `SE` = -6  | -6 > 20? NO : place 20 to the right |
+| `[-6 20 8 -2 4]`  | `NTI` = 8  | `SE` = 20  | 20> 8? YES : Shift 20 the right     |
+| `[-6 20 20 -2 4]` | `NTI` = 8  | `SE` = -6  | -6> 8? NO : place 8 the right       |
+| `[-6 8 20 -2 4]`  | `NTI` = -2 | `SE` = -20 | 20> -2? YES : Shift 20 to the right |
+| `[-6 8 20 20 4]`  | `NTI` = -2 | `SE` = 8   | 8> -2? YES : Shift 8 to the right   |
+| `[-6 8 8 20 4]`   | `NTI` = -2 | `SE` = -6  | -6> -2? YES : Shift -6 to the right |
+| `[-6 -2 8 20 4]`  | `NTI` = -2 | `SE` = -6  | -6> -2? No : place -2 to the right  |
+| `[-6 -2 8 20 4]`  | `NTI` = 4  | `SE` = 20  | 20> 4? Yes : Shift 20 to the right  |
+| `[-6 -2 8 20 20]` | `NTI` = 4  | `SE` = 8   | 8> 4? Yes : Shift 8 to the right    |
+| `[-6 -2 8 8 20]`  | `NTI` = 4  | `SE` = -2  | -2> 4? No : place 4 to the right    |
+| `[-6 -2 4 8 20]`  | -          | -          | -                                   |
+
+- `NTI` - Number to insert.
+- `SE` - Sorted element.
+
+> Finally we will have a sorted array `[-6 -2 4 8 20]`. Now let's go and implement this:
+
+```ts
+function insertionSort(arr: number[]) {
+  for (let i = 1; i < arr.length; i++) {
+    let nti = arr[i];
+    let j = i - 1;
+    while (j >= 0 && arr[j] > nti) {
+      arr[j + 1] = arr[j];
+      j -= 1;
+    }
+    arr[j + 1] = nti;
+  }
+}
+```
+
+? What about sorting in descending order?
+
+```ts
+function insertionSort(arr: number[]) {
+  for (let i = 1; i < arr.length; i++) {
+    let nti = arr[i];
+    let j = i - 1;
+    while (j >= 0 && arr[j] < nti) {
+      arr[j + 1] = arr[j];
+      j -= 1;
+    }
+    arr[j + 1] = nti;
+  }
+}
+```
+
+- Time complexity: **O(n^2)**
+
+#### Quick Sort
+
+- When doing a quicksort first we need to pick up the pivot element.
+  - **How do we pick up a pivot?.**
+    - first element of an array
+    - last element of an array
+    - median value as pivot
+    - random element as pivot
+- When sorting with this algorithm we basically put everything that is smaller than the pivot to the left and to the right if greater.
+- we repeat the process till we have an array of length 1. which is sorted by definition.
+
+```ts
+function quickSort(arr: number[]) {
+  if (arr.length < 2) return arr;
+  let pivot = arr[arr.length - 1];
+  let left = [];
+  let right = [];
+  for (let i = 0; i < arr.length - 1; i++) {
+    if (arr[i] < pivot) {
+      left.push(arr[i]);
+    } else {
+      right.push(arr[i]);
+    }
+  }
+  return [...quickSort(left), pivot, ...quickSort(right)];
+}
+```
+
+The above function returns a sorted array. If we want to sort arrays in place we can do it as follows:
+
+```ts
+function swap(arr: number[], i: number, j: number) {
+  const temp = arr[i];
+  arr[i] = arr[j];
+  arr[j] = temp;
+}
+
+function partition(arr: number[], left: number, right: number): number {
+  const pivot = arr[right];
+  let i = left - 1;
+  for (let j = left; j < right; j++) {
+    if (arr[j] < pivot) {
+      i++;
+      swap(arr, i, j);
+    }
+  }
+  swap(arr, i + 1, right);
+  return i + 1;
+}
+
+function quickSort(
+  arr: number[],
+  left: number = 0,
+  right: number = arr.length - 1
+): void {
+  if (left < right) {
+    const pivot = partition(arr, left, right);
+    quickSort(arr, left, pivot - 1);
+    quickSort(arr, pivot + 1, right);
+  }
+}
+```
+
+? What about sorting in descending order?
+
+```ts
+function quickSort(arr: number[]) {
+  if (arr.length < 2) return arr;
+  let pivot = arr[arr.length - 1];
+  let left = [];
+  let right = [];
+  for (let i = 0; i < arr.length - 1; i++) {
+    if (arr[i] > pivot) {
+      left.push(arr[i]);
+    } else {
+      right.push(arr[i]);
+    }
+  }
+  return [...quickSort(left), pivot, ...quickSort(right)];
+}
+```
+
+To sort in descending order in place you just need to modify the `partition` to
+
+```ts
+function partition(arr: number[], left: number, right: number): number {
+  const pivot = arr[right];
+  let i = left - 1;
+  for (let j = left; j < right; j++) {
+    if (arr[j] > pivot) {
+      i++;
+      swap(arr, i, j);
+    }
+  }
+  swap(arr, i + 1, right);
+  return i + 1;
+}
+```
+
+- Time complexity: **O(n^2)**
+
+#### Merge Sort
+
+The merge sort works as follows
+
+1. We divide the array into sub arrays with only one element which is considered sorted.
+2. We will then merge them together
+
+```ts
+function merge(left: number[], right: number[]) {
+  const sorted = [];
+  while (left.length && right.length) {
+    if (left[0] <= right[0]) {
+      sorted.push(left.shift());
+    } else {
+      sorted.push(right.shift());
+    }
+  }
+  return [...sorted, ...left, ...right];
+}
+function mergeSort(arr: number[]) {
+  if (arr.length < 2) return arr;
+  const mid = Math.floor(arr.length / 2);
+  const left = arr.slice(0, mid);
+  const right = arr.slice(mid);
+  return merge(mergeSort(left), mergeSort(right));
+}
+```
+
+? What about sorting in descending order?
+
+```ts
+function merge(left: number[], right: number[]) {
+  const sorted = [];
+  while (left.length && right.length) {
+    if (left[0] >= right[0]) {
+      sorted.push(left.shift());
+    } else {
+      sorted.push(right.shift());
+    }
+  }
+  return [...sorted, ...left, ...right];
+}
+function mergeSort(arr: number[]) {
+  if (arr.length < 2) return arr;
+  const mid = Math.floor(arr.length / 2);
+  const left = arr.slice(0, mid);
+  const right = arr.slice(mid);
+  return merge(mergeSort(left), mergeSort(right));
+}
+```
+
+- Time complexity: **O(n.log(n))**
