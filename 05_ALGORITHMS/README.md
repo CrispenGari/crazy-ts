@@ -25,6 +25,11 @@ In this readme we are going to have a look at how to implement some algorithms i
   - [Insertion Sort](#insertion-sort)
   - [Quick Sort](#quick-sort)
   - [Merge Sort](#merge-sort)
+- [Miscellaneous](#miscellaneous)
+  - [1. Cartesian Product](#1-cartesian-product)
+  - [2. Climbing Stairs](#2-climbing-stairs)
+  - [3. Tower of Hanoi](#3-tower-of-hanoi)
+- [Algorithm Design Techniques and Terminologies](#algorithm-design-techniques-and-terminologies)
 
 ### Time and Space Complexity Cheat-Sheet.
 
@@ -589,3 +594,105 @@ function mergeSort(arr: number[]) {
 ```
 
 - Time complexity: **O(n.log(n))**
+
+### Miscellaneous
+
+In this section we are going to have a look at some miscellaneous algorithms.
+
+#### 1. Cartesian Product
+
+Given 2 finite non-empty sets find their **Cartesian Product**.
+
+Let's say we have sets `A =[1, 2]` and `B = [1, 2, 3]` their Cartesian Product is `AxB = [[1, 2], [1, 2], [1, 3], [2, 1], [2, 2], [2, 3]]`
+
+```ts
+function cartesianProduct(a: number[], b: number[]) {
+  const cp: Array<number[]> = [];
+  for (let i = 0; i < a.length; i++) {
+    for (let j = 0; j < b.length; j++) {
+      cp.push([a[i], b[j]]);
+    }
+  }
+  return cp;
+}
+```
+
+- Time complexity: **O(mn)** - depends on the length of set `A` and `B`
+
+#### 2. Climbing Stairs
+
+Given a staircase of `n` find the number of distinct ways to climb to the top. You can either climb 1 step or 2 steps at a time.
+
+```shell
+n = 1 -> [(1)]
+n = 2 -> [(1), (2)]
+n = 3 -> [(1, 1, 1), (1, 2), (2, 1)]
+n = 4 -> [(1, 1, 1, 1), (1, 2, 1), (1 , 1, 2), (2, 1, 1), (2, 2)]
+```
+
+We can see from the patten that the number of ways we are getting by adding the `2` previous values eg:
+
+```shell
+n = 4 -> 2 + 3
+n = 3 -> 2 + 1
+```
+
+Where our base case is `1` and `2`
+
+```ts
+function climbingStaircase(n: number) {
+  const steps = [1, 2];
+  for (let i = 2; i <= n; i++) {
+    steps.push(steps[i - 1] + steps[i - 2]);
+  }
+  return steps[n - 1];
+}
+```
+
+We can do this with recursion as follows:
+
+```ts
+function climbingStaircase(n: number) {
+  if (n < 3) return n;
+  return climbingStaircase(n - 1) + climbingStaircase(n - 2);
+}
+```
+
+- Time complexity: **O(n)**
+
+#### 3. Tower of Hanoi
+
+The goal is to move the entire stuck from the first rod to the last one abiding the following rules:
+
+1. Only one disk can be moved
+2. You only take the upper disk and place it on top of a smaller disk and on an empty rod.
+3. No disk should be placed on top of the smaller disk.
+
+**Procedure**
+
+1. Shift `n-1` disk from `A` to `B` using `C` when required.
+2. Shift the last disk from `A` to `C`
+3. Shift `n-1` disk from `B` to `C` using `A` when required.
+4. repeat the process
+
+```ts
+function towerOfHanoi(disks: number, _from: string, to: string, using: string) {
+  if (disks === 1) {
+    console.log(`✔️ Moving 💿 ${disks} from ${_from} to ${to}.`);
+    return;
+  }
+  towerOfHanoi(disks - 1, _from, using, to);
+  console.log(`✔️ Moving 💿 ${disks} from ${_from} to ${to}.`);
+  towerOfHanoi(disks - 1, using, to, _from);
+}
+```
+
+- Time complexity: **O(2^n)**
+
+### Algorithm Design Techniques and Terminologies
+
+1. **Brute force** - Simple and exhaustive technique that evaluate every possible outcome to find the best. e.g (Linear Search Algorithm)
+2. **Greedy** - Choose the best option at that current time without considering the future e.g (Dijkstra's algorithm, Prim's algorithm and Kruskai's Algorithm)
+3. **Divide and Conquer** - Divide a problem into smaller problem and each smaller problem will be solved and the partial solutions are then combined as a single solution. eg (Binary Search, Quick Sort, Merge Sort and Tower of hanoi)
+4. **Dynamic Programming** - Divide the problem into smaller sub problems, breaking it down into smaller sub problem. Store the result and reuse it into sub problems. This is called a memorization and optimization technique that improves the time complexity of an algorithm. eg (Fibonacci and Climbing staircase)
+5. **Backtracking** - Generates all possible solutions, check if the solution satisfies all the given constraints and only then you proceed with generating subsequent solutions. If the constraints are not satisfied backtrack and go on different path to find the solution. eg (N-Queens) problem.
