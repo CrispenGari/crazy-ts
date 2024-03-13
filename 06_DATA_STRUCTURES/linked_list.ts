@@ -7,12 +7,14 @@ class ListNode<TValue> {
   }
 }
 
-class LinkedList<TValue> {
-  private size: number;
-  private head: ListNode<TValue> | null;
+export class LinkedList<TValue> {
+  public size: number;
+  public head: ListNode<TValue> | null;
+  public tail: typeof this.head;
   constructor() {
     this.size = 0;
     this.head = null;
+    this.tail = null;
   }
   getSize() {
     return this.size;
@@ -23,22 +25,24 @@ class LinkedList<TValue> {
 
   prepend(value: TValue) {
     const node = new ListNode(value);
-    if (!this.isEmpty()) {
+    if (this.isEmpty()) {
+      this.head = node;
+      this.tail = node;
+    } else {
       node.next = this.head;
+      this.head = node;
     }
-    this.head = node;
+
     this.size += 1;
   }
   append(value: TValue) {
     const node = new ListNode(value);
     if (this.isEmpty()) {
       this.head = node;
+      this.tail = node;
     } else {
-      let curr = this.head;
-      while (curr?.next) {
-        curr = curr.next;
-      }
-      curr!.next = node;
+      this.tail!.next = node;
+      this.tail = node;
     }
     this.size += 1;
   }
@@ -59,6 +63,31 @@ class LinkedList<TValue> {
     }
   }
 
+  removeFromFront() {
+    if (this.isEmpty()) return null;
+    const removedNode = this.head;
+    const value = removedNode!.value;
+    this.head = removedNode!.next;
+    this.size -= 1;
+    return value;
+  }
+  removeFromEnd() {
+    if (this.isEmpty()) return null;
+    const value = this.tail!.value;
+    if (this.size === 1) {
+      this.head = null;
+      this.tail = null;
+    } else {
+      let prev = this.head;
+      while (prev?.next?.next !== null) {
+        prev = prev!.next;
+      }
+      prev.next = null;
+      this.tail = prev;
+    }
+    this.size--;
+    return value;
+  }
   removeFrom(index: number) {
     if (this.isEmpty()) return null;
     if (index < 0 || index > this.size) return;
@@ -113,14 +142,15 @@ class LinkedList<TValue> {
     return -1;
   }
   reverse() {
-    let prev = null;
     let curr = this.head;
+    let prev: typeof this.head = null;
     while (curr) {
       const next = curr.next;
       curr.next = prev;
       prev = curr;
       curr = next;
     }
+    this.tail = this.head;
     this.head = prev;
   }
   print() {
@@ -137,12 +167,3 @@ class LinkedList<TValue> {
     }
   }
 }
-
-const list = new LinkedList<number>();
-list.insert(1, 0);
-list.insert(2, 1);
-list.insert(3, 1);
-console.log(list.search(3));
-console.log({ empty: list.isEmpty(), size: list.getSize() });
-list.reverse();
-list.print();
