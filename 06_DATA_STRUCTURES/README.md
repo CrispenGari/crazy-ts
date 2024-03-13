@@ -16,6 +16,7 @@ In this readme we are going to have a loop at data structures in `typescript`. W
     - [1. `Stack`](#1-stack)
     - [2. `Queue`](#2-queue)
     - [3. `Circular Queue`](#3-circular-queue)
+    - [5. `Linked List`](#5-linked-list)
 
 #### What is a data structure?
 
@@ -305,3 +306,479 @@ const queue = new CircularQueue<number>(13, 5, 7, 9, 10, -11);
 - `dequeue` - returns the element at the head of a circular queue and remove it.
 - `isEmpty` - checks if a circular queue is empty or not.
 - `isFull` - checks if a circular queue is full or not.
+
+##### 5. `Linked List`
+
+A linked list is a data structure which contains a series of connected nodes where each node consist of a data value and a pointer to the next node. In this section we are going to implement a linked list data structure using typescript and it's methods. A linked list data structure support mainly 3 operations which are insertion, deletions and searching.
+
+```shell
+
+[10| •-]---->[20| •-]---->[30| •-]---->[null]
+   |
+  head
+```
+
+The last element of a linked list point to null.
+
+> Note that all operations of a linked list starts at the tail.
+
+In this section we are going to go step by step in the implementation of a singly linked list in typescript. First let's create a class called `ListNode` and `LinkedList` and add some few methods:
+
+1. `isEmpty()` - checks if the linked list is empty or not.
+2. `getSize()` - returns the size of the linked list.
+
+```ts
+class ListNode<TValue> {
+  public value: TValue;
+  public next: ListNode<TValue> | null;
+  constructor(value: TValue) {
+    this.value = value;
+    this.next = null;
+  }
+}
+class LinkedList<TValue> {
+  private size: number;
+  private head: ListNode<TValue> | null;
+  constructor() {
+    this.size = 0;
+    this.head = null;
+  }
+  getSize() {
+    return this.size;
+  }
+  isEmpty() {
+    return this.size === 0;
+  }
+}
+const list = new LinkedList<number>();
+```
+
+Next we are going to create a method called `prepend`. This method takes in a value and add it to the beginning of the linked list.
+
+- if the linked list is empty then the head is that newly created node
+- if not then the node.next will be the head and the head will be
+
+```ts
+class LinkedList<TValue> {
+  private size: number;
+  private head: ListNode<TValue> | null;
+  constructor() {
+    this.size = 0;
+    this.head = null;
+  }
+  getSize() {
+    return this.size;
+  }
+  isEmpty() {
+    return this.size === 0;
+  }
+
+  prepend(value: TValue) {
+    const node = new ListNode(value);
+    if (!this.isEmpty()) {
+      node.next = this.head;
+    }
+    this.head = node;
+    this.size += 1;
+  }
+  print() {
+    if (this.isEmpty()) {
+      console.log("The linked list is empty");
+    } else {
+      let curr = this.head;
+      let str = "";
+      while (curr) {
+        str += `[${curr.value}| •-]---->`;
+        curr = curr.next;
+      }
+      console.log(str + "[null]");
+    }
+  }
+}
+
+const list = new LinkedList<number>();
+
+list.prepend(10);
+list.prepend(15);
+list.prepend(30);
+console.log({ empty: list.isEmpty(), size: list.getSize() });
+list.print();
+```
+
+Output:
+
+```shell
+{ empty: false, size: 3 }
+[30| •-]---->[15| •-]---->[10| •-]---->[null]
+```
+
+- The time complexity of the prepared method is constant **(O(n))**
+
+Next we are going to create a `append` method which adds an element at the end of a linked list.
+
+- if the linked list is empty we add a new node and set is as a head
+- if not we need a reference to the last node in the list
+- we add a new node at the end of of the linked list and attach the link between the last node and the currently inserted node.
+- the currently inserted node will the point to null.
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  append(value: TValue) {
+    const node = new ListNode(value);
+    if (this.isEmpty()) {
+      this.head = node;
+    } else {
+      let curr = this.head;
+      while (curr?.next) {
+        curr = curr.next;
+      }
+      curr!.next = node;
+    }
+    this.size += 1;
+  }
+  // ...
+}
+
+const list = new LinkedList<number>();
+list.prepend(10);
+list.prepend(15);
+list.prepend(30);
+list.append(0);
+list.append(35);
+console.log({ empty: list.isEmpty(), size: list.getSize() });
+list.print();
+```
+
+The time complexity of this operation is **O(n)** since we have to traverse down th list to find the last node.
+
+Output:
+
+```shell
+{ empty: false, size: 5 }
+[30| •-]---->[15| •-]---->[10| •-]---->[0| •-]---->[35| •-]---->[null]
+```
+
+The next method that we are going to implement is the `insert`. This method will insert a certain value in a linked list at a certain index.
+
+- If the index is greater than the size of the linked list we return the function
+- If the list is empty we insert the node in the list and set that node as a head of a linked list using the `prepend` method.
+- If not then we find the node at `index -1` which will be the previous node
+- we point the previous node to the newly created node
+- we point the inserted node to what previous was pointing to
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  insert(value: TValue, index: number) {
+    if (index < 0 || index > this.size) return;
+    const node = new ListNode(value);
+    if (index === 0) {
+      this.prepend(value);
+    } else {
+      let prev = this.head;
+      for (let i = 0; i < index - 1; i++) {
+        prev = prev!.next;
+      }
+      node.next = prev!.next;
+      prev!.next = node;
+      this.size += 1;
+    }
+  }
+  //  ...
+}
+
+const list = new LinkedList<number>();
+list.insert(1, 0);
+list.insert(2, 1);
+list.insert(3, 1);
+console.log({ empty: list.isEmpty(), size: list.getSize() });
+list.print();
+```
+
+Output:
+
+```shell
+{ empty: false, size: 3 }
+[1| •-]---->[3| •-]---->[2| •-]---->[null]
+```
+
+Next we are going to implement the `removeFrom` function. This function takes in an index of the node that you want to remove and returns the value from the removed node.
+
+1. if the index is less than 0, or the index is greater than the list size we return null.
+2. if we try to remove the head we point the head pointer to the next node (if index is 0)
+3. if not head we need to find the previous node and then link it with the next node that was connected to the currently removed node.
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  removeFrom(index: number) {
+    if (this.isEmpty()) return null;
+    if (index < 0 || index > this.size) return;
+    let removedNode: typeof this.head;
+    if (index === 0) {
+      removedNode = this.head;
+      this.head = removedNode!.next;
+    } else {
+      let prev = this.head;
+      for (let i = 0; i < index - 1; i++) {
+        prev = prev!.next;
+      }
+      removedNode = prev!.next;
+      prev!.next = removedNode!.next;
+    }
+    this.size--;
+    return removedNode!.value;
+  }
+  // ...
+}
+
+const list = new LinkedList<number>();
+list.insert(1, 0);
+list.insert(2, 1);
+list.insert(3, 1);
+list.removeFrom(1);
+console.log({ empty: list.isEmpty(), size: list.getSize() });
+list.print();
+```
+
+Output:
+
+```shell
+{ empty: false, size: 2 }
+[1| •-]---->[2| •-]---->[null]
+```
+
+Next we are going to implement the `removeValue` function that removes a node and returns a value based on the value passed.
+
+- if the list is empty we return null
+- if the value is at the head we point the head to the next node
+- if the value is not at the head then we traverse through the list searching for a node value that matches the value passed.
+- In this case we need to keep in track of the previous node that is linked to the one that we want to remove
+- then we point the previous node to the node that is pointed by the node that we are tying to remove.
+- return the value of the removed node
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  removeValue(value: TValue) {
+    if (this.isEmpty()) return null;
+    if (this.head!.value === value) {
+      this.head = this.head!.next;
+      this.size -= 1;
+      return value;
+    } else {
+      let prev = this.head;
+
+      while (prev!.next && prev!.next.value !== value) {
+        prev = prev!.next;
+      }
+      if (prev?.next) {
+        prev.next = prev.next.next;
+        this.size -= 1;
+        return value;
+      }
+      return null;
+    }
+  }
+  // ...
+}
+const list = new LinkedList<number>();
+list.insert(1, 0);
+list.insert(2, 1);
+list.insert(3, 1);
+list.removeValue(3);
+console.log({ empty: list.isEmpty(), size: list.getSize() });
+list.print();
+```
+
+Output:
+
+```shell
+{ empty: false, size: 2 }
+[1| •-]---->[2| •-]---->[null]
+```
+
+Next we are going to implement the `search` method. Which will return the index of the node that matches a value or `-1` if the value is not found in the linked list.
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  search(value) {
+    if (this.isEmpty()) {
+      return -1;
+    }
+    let i = 0;
+    let curr = this.head;
+    while (curr) {
+      if (curr.value === value) {
+        return i;
+      }
+      curr = curr.next;
+      i++;
+    }
+    return -1;
+  }
+  // ...
+}
+
+const list = new LinkedList<number>();
+list.insert(1, 0);
+list.insert(2, 1);
+list.insert(3, 1);
+console.log(list.search(3));
+console.log({ empty: list.isEmpty(), size: list.getSize() });
+list.print();
+```
+
+Output:
+
+```shell
+1
+{ empty: false, size: 3 }
+[1| •-]---->[3| •-]---->[2| •-]---->[null]
+```
+
+The next method that we are going to implement is the `reverse` method that is responsible for reversing a linked list. Here is how we will go about it:
+
+- start from the head of the linked list
+- the head should point to null
+- then we move to the next node that will point to the head
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  reverse() {
+    let prev = null;
+    let curr = this.head;
+    while (curr) {
+      const next = curr.next;
+      curr.next = prev;
+      prev = curr;
+      curr = next;
+    }
+    this.head = prev;
+  }
+  // ...
+}
+const list = new LinkedList<number>();
+list.insert(1, 0);
+list.insert(2, 1);
+list.insert(3, 1);
+console.log(list.search(3));
+console.log({ empty: list.isEmpty(), size: list.getSize() });
+list.reverse();
+list.print();
+```
+
+Output:
+
+```shell
+1
+{ empty: false, size: 3 }
+[2| •-]---->[3| •-]---->[1| •-]---->[null]
+```
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  // ...
+}
+```
+
+Output:
+
+```shell
+
+```
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  // ...
+}
+```
+
+Output:
+
+```shell
+
+```
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  // ...
+}
+```
+
+Output:
+
+```shell
+
+```
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  // ...
+}
+```
+
+Output:
+
+```shell
+
+```
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  // ...
+}
+```
+
+Output:
+
+```shell
+
+```
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  // ...
+}
+```
+
+Output:
+
+```shell
+
+```
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  // ...
+}
+```
+
+Output:
+
+```shell
+
+```
+
+```ts
+class LinkedList<TValue> {
+  // ...
+  // ...
+}
+```
+
+Output:
+
+```shell
+
+```
