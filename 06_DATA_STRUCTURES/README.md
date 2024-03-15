@@ -16,16 +16,21 @@ In this readme we are going to have a loop at data structures in `typescript`. W
     - [1. `Stack`](#1-stack)
     - [2. `Queue`](#2-queue)
     - [3. `Circular Queue`](#3-circular-queue)
-    - [5. `Linked List`](#5-linked-list)
-    - [5.1 `Stack implementation using the Linked Lists.`](#51-stack-implementation-using-the-linked-lists)
-    - [5.2 `Queue implementation using the Linked Lists.`](#52-queue-implementation-using-the-linked-lists)
-  - [`Hash Tables`](#hash-tables)
-    - [`Handling Collisions`](#handling-collisions)
-  - [`Trees`](#trees)
-    - [`Binary Search Tree (BST)`](#binary-search-tree-bst)
+    - [4. `Linked List`](#4-linked-list)
+      - [4.1 `Stack implementation using the Linked Lists.`](#41-stack-implementation-using-the-linked-lists)
+      - [4.2 `Queue implementation using the Linked Lists.`](#42-queue-implementation-using-the-linked-lists)
+    - [5. `Hash Tables`](#5-hash-tables)
+      - [`Handling Collisions`](#handling-collisions)
+    - [6. `Trees`](#6-trees)
+      - [1.1 `Binary Search Tree (BST)`](#11-binary-search-tree-bst)
       - [`1.1 Traversing through a BST`](#11-traversing-through-a-bst)
       - [`1.1.1 Depth First Search (DFS)`](#111-depth-first-search-dfs)
       - [`1.1.2 Breadth First Search (BFS)`](#112-breadth-first-search-bfs)
+    - [7. `Graphs`](#7-graphs)
+      - [`Types of Graphs`](#types-of-graphs)
+      - [`Graphs Representation`](#graphs-representation)
+      - [1. `Adjacency matrix`](#1-adjacency-matrix)
+      - [2. `Adjacency list`](#2-adjacency-list)
 
 #### What is a data structure?
 
@@ -316,7 +321,7 @@ const queue = new CircularQueue<number>(13, 5, 7, 9, 10, -11);
 - `isEmpty` - checks if a circular queue is empty or not.
 - `isFull` - checks if a circular queue is full or not.
 
-##### 5. `Linked List`
+##### 4. `Linked List`
 
 A linked list is a data structure which contains a series of connected nodes where each node consist of a data value and a pointer to the next node. In this section we are going to implement a linked list data structure using typescript and it's methods. A linked list data structure support mainly 3 operations which are insertion, deletions and searching.
 
@@ -1115,7 +1120,7 @@ class LinkedList<TValue> {
 }
 ```
 
-##### 5.1 `Stack implementation using the Linked Lists.`
+###### 4.1 `Stack implementation using the Linked Lists.`
 
 In this subsection we are going to implement the the `Stack` using a linked list data structure.
 
@@ -1147,7 +1152,7 @@ class Stack<TItem> {
 const stack = new Stack<number>(3, 5, 7, 9, 9);
 ```
 
-##### 5.2 `Queue implementation using the Linked Lists.`
+###### 4.2 `Queue implementation using the Linked Lists.`
 
 In this subsection we are going to implement the the `Queue` data structure using a linked list data structure.
 
@@ -1349,7 +1354,7 @@ list.prepend(5);
 list.print();
 ```
 
-#### `Hash Tables`
+##### 5. `Hash Tables`
 
 A hash table is also know as a hash map is a data structure that is used to store key value pairs. In this section we are going to implement a hash table data structures from scratch. This function will contains the following operations
 
@@ -1406,7 +1411,7 @@ Output:
 
 We can see that there is collision between property `age` and `gea` because these two properties have the same characters hence the hash key will be the same. So we need to handle this because this can't be handled by increasing the table size.
 
-##### `Handling Collisions`
+###### `Handling Collisions`
 
 Collision occurs when there is a class in keys in a hash table. This is a problem because we might loose data which is not the primary purpose of a data structure. We are going to handle this in a simple way by storing the keys and values as an array inside the `table`. The code bellow show the implementation of that. We are going to modify the `set` and `get` methods to:
 
@@ -1550,7 +1555,7 @@ Output:
 { age: 23, surname: 'Doe', name: 'John', gea: undefined }
 ```
 
-#### `Trees`
+##### 6. `Trees`
 
 A tree is a hierarchical data structure that consist of nodes connected by edges. Tress allow quicker and easier access to data. Let's first have a look at some terminology that are used in tree data structure.
 
@@ -1565,7 +1570,7 @@ A tree is a hierarchical data structure that consist of nodes connected by edges
 9. Depth - the number of edges from the root node to that node. Eg the depth of the root node is 0
 10. Height- The number of edges from the deepest leaf to that node.
 
-##### `Binary Search Tree (BST)`
+###### 1.1 `Binary Search Tree (BST)`
 
 This is a tree data structure where each node has at most 2 children. A BST has the following two properties
 
@@ -2113,3 +2118,262 @@ Output:
 ```
 
 The whole implementation of the `BST` will be found in the [`bst.ts`](/06_DATA_STRUCTURES/bst.ts) file.
+
+##### 7. `Graphs`
+
+A graph is a non-linear data structure that contains a finite number of vertices also called nodes connected by edges.
+
+###### `Types of Graphs`
+
+1. Directed Graphs - A graph in which the edges have a direction.
+2. Undirected Graphs - A graph where edges are bidirectional. Meaning the graph can be traversed in any direction. These types of graphs can be visually shown with no arrows.
+
+###### `Graphs Representation`
+
+A graph can be presented in two ways.
+
+###### 1. `Adjacency matrix`
+
+An adjacency matrix is a `2D` array which consist of size `VxV` where V is the number of vertices in a graph.
+
+- Each row and column represents a vertex.
+  - if the value of matrix[i][j] = 1 then this means that there is an edge connecting vertex i and vertex j.
+
+```ts
+const matrix = [
+  [0, 1, 0],
+  [1, 0, 1],
+  [0, 1, 0],
+];
+```
+
+Assuming that we have vertices `A`, `B` and `C` from the above matrix representation respectively we can take the following points.
+
+1. vertex `A` is connected to vertex `B`
+2. vertex `B` is connected to vertex `A` and vertex `C`
+3. vertex `C` is connected to vertex `B` only
+
+###### 2. `Adjacency list`
+
+Vertices are stored in a map like data structure, and every vertex stores a list of it's adjacent vertices. Let's have a look at the following points and create an `adjacencyList` from them
+
+1. vertex `A` is connected to vertex `B`
+2. vertex `B` is connected to vertex `A` and vertex `C`
+3. vertex `C` is connected to vertex `B` only
+
+```ts
+const adjacencyList = {
+  A: ["B"],
+  B: ["A", "C"],
+  C: ["B"],
+};
+```
+
+We are going to use this to implement our graph data structure because of the following reasons compared to the Adjacency Matrix.
+
+1. It's storage efficient
+2. It has constant time complexity.
+3. Doesn't store unnecessary information for example, even if `C` and `A` are not connected we still have to store `0` in the matrix.
+
+The first method that we'll implement is the `addVertex` and it:
+
+1. Take in a vertex which is a string
+2. Check if it exists in the verticesLists.
+3. If it does then it will not add it
+4. If not then it will add it as an object property and set it's initial value as an empty set.
+
+```ts
+class Graph<T extends string> {
+  private adjacencyList: Record<string, Set<T>>;
+  constructor() {
+    this.adjacencyList = {};
+  }
+
+  addVertex(vertex: T) {
+    if (!this.adjacencyList[vertex]) {
+      this.adjacencyList[vertex] = new Set();
+    }
+  }
+}
+
+const graph = new Graph<string>();
+graph.addVertex("A");
+graph.addVertex("B");
+graph.addVertex("C");
+console.log({ graph });
+```
+
+Output:
+
+```shell
+{
+  graph: Graph { verticesList: { A: Set(0) {}, B: Set(0) {}, C: Set(0) {} } }
+}
+```
+
+The next method that we are going to implement is called `addEdge` which:
+
+1. Takes in two vertices and add them to the graph.
+2. First we check if the vertex is in the graph if not we create it.
+3. Then we create a bidirectional connection between these two vertices.
+
+```ts
+class Graph<T extends string> {
+  // ...
+
+  addEdge(vertex1: T, vertex2: T) {
+    this.addVertex(vertex1);
+    this.addVertex(vertex2);
+    this.adjacencyList[vertex1].add(vertex2);
+    this.adjacencyList[vertex2].add(vertex1);
+  }
+  // ...
+}
+
+const graph = new Graph<string>();
+graph.addVertex("A");
+graph.addVertex("B");
+graph.addVertex("C");
+
+graph.addEdge("A", "B");
+graph.addEdge("B", "C");
+graph.addEdge("C", "B");
+console.log({ graph });
+```
+
+Output:
+
+```shell
+{ graph: Graph { adjacencyList: { A: [Set], B: [Set], C: [Set] } } }
+```
+
+The next method that we are going to create is called `display` that will display the `Vertex` and it's adjacency list.
+
+```ts
+class Graph<T extends string> {
+  // ...
+  display() {
+    for (const vertex in this.adjacencyList) {
+      console.log(`vertex ${vertex}:`, [...this.adjacencyList[vertex]]);
+    }
+  }
+  // ...
+}
+```
+
+Output:
+
+```shell
+vertex A: [ 'B' ]
+vertex B: [ 'A', 'C' ]
+vertex C: [ 'B' ]
+```
+
+The next to method that we are going to add are called `removeEdge` and `removeVertex` which does what their names says.
+
+1. When removing edges we need to make sure we remove the bidirectional edges of these edges.
+2. When removing a vertex we need to make sure that we remove the edges first.
+
+```ts
+class Graph<T extends string> {
+  // ...
+  removeEdge(vertex1: T, vertex2: T) {
+    this.adjacencyList[vertex1].delete(vertex2);
+    this.adjacencyList[vertex2].delete(vertex1);
+  }
+  removeVertex(vertex: T) {
+    if (!this.adjacencyList[vertex]) {
+      return;
+    }
+    for (let adjacentVertex of this.adjacencyList[vertex]) {
+      this.removeEdge(vertex, adjacentVertex);
+    }
+    delete this.adjacencyList[vertex];
+  }
+  // ...
+}
+const graph = new Graph<string>();
+graph.addVertex("A");
+graph.addVertex("B");
+graph.addVertex("C");
+
+graph.addEdge("A", "B");
+graph.addEdge("B", "C");
+graph.addEdge("C", "B");
+graph.display();
+console.log("-------------------");
+graph.removeEdge("B", "C");
+graph.display();
+console.log("-------------------");
+graph.removeVertex("C");
+graph.display();
+```
+
+Output:
+
+```shell
+vertex A: [ 'B' ]
+vertex B: [ 'A', 'C' ]
+vertex C: [ 'B' ]
+-------------------
+vertex A: [ 'B' ]
+vertex B: [ 'A' ]
+vertex C: []
+-------------------
+vertex A: [ 'B' ]
+vertex B: [ 'A' ]
+```
+
+The last method that we are going to implement is called `hasEdge` which is responsible for checking if 2 vertices have edge between them.
+
+```ts
+class Graph<T extends string> {
+  // ...
+  hasEdge(vertex1: T, vertex2: T) {
+    return (
+      this.adjacencyList[vertex1].has(vertex2) &&
+      this.adjacencyList[vertex2].has(vertex1)
+    );
+  }
+  // ...
+}
+const graph = new Graph<string>();
+graph.addVertex("A");
+graph.addVertex("B");
+graph.addVertex("C");
+
+graph.addEdge("A", "B");
+graph.addEdge("B", "C");
+graph.addEdge("C", "B");
+graph.display();
+console.log("-------------------");
+graph.removeEdge("B", "C");
+graph.display();
+console.log("-------------------");
+graph.removeVertex("C");
+graph.display();
+console.log("-------------------");
+console.log({
+  aHasB: graph.hasEdge("A", "B"),
+  bHasC: graph.hasEdge("B", "C"),
+});
+```
+
+Output:
+
+```shell
+vertex A: [ 'B' ]
+vertex B: [ 'A', 'C' ]
+vertex C: [ 'B' ]
+-------------------
+vertex A: [ 'B' ]
+vertex B: [ 'A' ]
+vertex C: []
+-------------------
+vertex A: [ 'B' ]
+vertex B: [ 'A' ]
+-------------------
+{ aHasB: true, bHasC: false }
+```
+
+> The full implementation of the `graph` data structure can be found [`graph.ts`](/06_DATA_STRUCTURES/graph.ts) file.
