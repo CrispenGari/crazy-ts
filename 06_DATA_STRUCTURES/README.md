@@ -19,6 +19,13 @@ In this readme we are going to have a loop at data structures in `typescript`. W
     - [5. `Linked List`](#5-linked-list)
     - [5.1 `Stack implementation using the Linked Lists.`](#51-stack-implementation-using-the-linked-lists)
     - [5.2 `Queue implementation using the Linked Lists.`](#52-queue-implementation-using-the-linked-lists)
+  - [`Hash Tables`](#hash-tables)
+    - [`Handling Collisions`](#handling-collisions)
+  - [`Trees`](#trees)
+    - [`Binary Search Tree (BST)`](#binary-search-tree-bst)
+      - [`1.1 Traversing through a BST`](#11-traversing-through-a-bst)
+      - [`1.1.1 Depth First Search (DFS)`](#111-depth-first-search-dfs)
+      - [`1.1.2 Breadth First Search (BFS)`](#112-breadth-first-search-bfs)
 
 #### What is a data structure?
 
@@ -1342,21 +1349,767 @@ list.prepend(5);
 list.print();
 ```
 
+#### `Hash Tables`
+
+A hash table is also know as a hash map is a data structure that is used to store key value pairs. In this section we are going to implement a hash table data structures from scratch. This function will contains the following operations
+
+1. `set` - inserting a new key value pair
+2. `get` - get a value based on a key provided
+3. `remove` - remove a key and it's value from the table.
+
+Let's implement a hash table data structure from scratch. First things first we will need to implement the `hash` function which is used to create hash keys. What we are going to do when creating a hash keys is that we are going to convert a string into `ASCII` characters and sum them together. That how we will be hashing our keys assuming that all the keys will be strings.
+
+```ts
+class HashTable<TItem> {
+  private table: TItem[];
+  constructor(private size: number) {
+    this.table = new Array(size);
+  }
+  hash(key: string) {
+    let total = 0;
+    for (let i = 0; i < key.length; i++) {
+      total += key.charCodeAt(i);
+    }
+    return total % this.size;
+  }
+
+  set(key: string, value: TItem) {
+    const index = this.hash(key);
+    this.table[index] = value;
+  }
+  get(key: string) {
+    const index = this.hash(key);
+    return this.table[index];
+  }
+}
+
+const table = new HashTable<string | number>(50);
+
+table.set("name", "John");
+table.set("surname", "Doe");
+table.set("age", 23);
+table.set("gea", "hello");
+
+console.log({
+  age: table.get("age"),
+  surname: table.get("surname"),
+  name: table.get("name"),
+  gea: table.get("gea"),
+});
+```
+
 Output:
 
 ```shell
-
+{ age: 'hello', surname: 'Doe', name: 'John', gea: 'hello' }
 ```
 
+We can see that there is collision between property `age` and `gea` because these two properties have the same characters hence the hash key will be the same. So we need to handle this because this can't be handled by increasing the table size.
+
+##### `Handling Collisions`
+
+Collision occurs when there is a class in keys in a hash table. This is a problem because we might loose data which is not the primary purpose of a data structure. We are going to handle this in a simple way by storing the keys and values as an array inside the `table`. The code bellow show the implementation of that. We are going to modify the `set` and `get` methods to:
+
 ```ts
-class LinkedList<TValue> {
+class HashTable<TItem> {
+  private table: Array<Array<TItem | string>[]>;
+  constructor(private size: number) {
+    this.table = new Array(size);
+  }
+  //   [i]
+  hash(key: string) {
+    let total = 0;
+    for (let i = 0; i < key.length; i++) {
+      total += key.charCodeAt(i);
+    }
+    return total % this.size;
+  }
+
+  set(key: string, value: TItem) {
+    const index = this.hash(key);
+    const bucket = this.table[index];
+    if (!!!bucket) {
+      this.table[index] = [[key, value]];
+    } else {
+      const sameKeyItem = bucket.find((item) => item[0] === key);
+      if (sameKeyItem) {
+        sameKeyItem[1] = value;
+      } else {
+        bucket.push([key, value]);
+      }
+    }
+  }
+  get(key: string) {
+    const index = this.hash(key);
+    const bucket = this.table[index];
+    if (bucket) {
+      const sameKeyItem = bucket.find((item) => item[0] === key);
+      if (sameKeyItem) {
+        return sameKeyItem[1];
+      }
+    }
+    return undefined;
+  }
+}
+
+const table = new HashTable<string | number>(50);
+
+table.set("name", "John");
+table.set("surname", "Doe");
+table.set("age", 23);
+table.set("gea", "hello");
+
+console.log({
+  age: table.get("age"),
+  surname: table.get("surname"),
+  name: table.get("name"),
+  gea: table.get("gea"),
+  und: table.get("Undefined"),
+});
+```
+
+Output:
+
+```shell
+{ age: 23, surname: 'Doe', name: 'John', gea: 'hello', und: undefined }
+```
+
+With just that we have handled collision. Next we are going to implement the `remove` function which allows us to remove an item from the hash table.
+
+```ts
+class HashTable<TItem> {
+  private table: Array<Array<TItem | string>[]>;
+  constructor(private size: number) {
+    this.table = new Array(size);
+  }
+  //   [i]
+  hash(key: string) {
+    let total = 0;
+    for (let i = 0; i < key.length; i++) {
+      total += key.charCodeAt(i);
+    }
+    return total % this.size;
+  }
+
+  set(key: string, value: TItem) {
+    const index = this.hash(key);
+    const bucket = this.table[index];
+    if (!!!bucket) {
+      this.table[index] = [[key, value]];
+    } else {
+      const sameKeyItem = bucket.find((item) => item[0] === key);
+      if (sameKeyItem) {
+        sameKeyItem[1] = value;
+      } else {
+        bucket.push([key, value]);
+      }
+    }
+  }
+  get(key: string) {
+    const index = this.hash(key);
+    const bucket = this.table[index];
+    if (bucket) {
+      const sameKeyItem = bucket.find((item) => item[0] === key);
+      if (sameKeyItem) {
+        return sameKeyItem[1];
+      }
+    }
+    return undefined;
+  }
+  remove(key: string) {
+    let index = this.hash(key);
+    const bucket = this.table[index];
+    if (bucket) {
+      const sameKeyItem = bucket.find((item) => item[0] === key);
+      if (sameKeyItem) {
+        bucket.splice(bucket.indexOf(sameKeyItem), 1);
+      }
+    }
+  }
+}
+
+const table = new HashTable<string | number>(50);
+
+table.set("name", "John");
+table.set("surname", "Doe");
+table.set("age", 23);
+table.set("gea", "hello");
+table.remove("gea");
+
+console.log({
+  age: table.get("age"),
+  surname: table.get("surname"),
+  name: table.get("name"),
+  gea: table.get("gea"),
+});
+```
+
+Output:
+
+```shell
+{ age: 23, surname: 'Doe', name: 'John', gea: undefined }
+```
+
+#### `Trees`
+
+A tree is a hierarchical data structure that consist of nodes connected by edges. Tress allow quicker and easier access to data. Let's first have a look at some terminology that are used in tree data structure.
+
+1. Parent Node - is the node where the tree starts, it sometimes called a root node. This is where all operations of a tree originates.
+2. Child Node - Any node that is connected to another node above it's hierarch.
+3. Leaf Nodes -Nodes that doesn't have root nodes.
+4. Siblings - Nodes with the same parent.
+5. Ancestor Node - Is a node that has grand children.
+6. Path - The sequency of edges from one node to another.
+7. Distance - the number of shotes edges between two nodes.
+8. Degree - A degree of a node is the total number of nodes it has.
+9. Depth - the number of edges from the root node to that node. Eg the depth of the root node is 0
+10. Height- The number of edges from the deepest leaf to that node.
+
+##### `Binary Search Tree (BST)`
+
+This is a tree data structure where each node has at most 2 children. A BST has the following two properties
+
+1. The value of each left node must be smaller that the parent node.
+2. The value of each right node must be greater that the parent node.
+
+`BST` supports the following operations:
+
+1. Insertion
+2. Search
+3. DFS and BFS
+4. Deletion
+
+Now let's implement the `BST` in typescript.
+
+```ts
+class TreeNode<T> {
+  public left: TreeNode<T> | null;
+  public right: typeof this.left;
+  constructor(public value: T) {
+    this.left = null;
+    this.right = null;
+  }
+}
+
+class BST<T> {
+  public root: TreeNode<T> | null;
+  constructor() {
+    this.root = null;
+  }
+  isEmpty() {
+    return this.root === null;
+  }
+}
+
+const bst = new BST();
+console.log({ empty: bst.isEmpty() });
+```
+
+Output:
+
+```shell
+{ empty: true }
+```
+
+The next method that we are going to implement is the `insert` which is responsible for adding elements to a tree. The insert method will:
+
+1. It takes in a value and if the tree is empty that newly created node is the root node.
+2. If not we are going to traverse through the tree using recursion checking if the node value that we are going to insert belongs to the `left` or `right` depending on the fact that is it greater or less than the parent node value.
+
+```ts
+class BST<T> {
   // ...
+
+  insert(value: T) {
+    const node = new TreeNode(value);
+    if (this.isEmpty()) {
+      this.root = node;
+    } else {
+      this.insertNode(this.root!, node);
+    }
+  }
+
+  private insertNode(root: Required<TreeNode<T>>, node: Required<TreeNode<T>>) {
+    if (node.value < root.value) {
+      // left insertion
+      if (root.left == null) {
+        root.left = node;
+      } else {
+        this.insertNode(root.left, node);
+      }
+    } else {
+      // right insertion
+      if (root.right == null) {
+        root.right = node;
+      } else {
+        this.insertNode(root.right, node);
+      }
+    }
+  }
   // ...
+}
+const bst = new BST<number>();
+bst.insert(10);
+bst.insert(20);
+bst.insert(5);
+bst.insert(99);
+bst.insert(0);
+console.log({ empty: bst.isEmpty() });
+```
+
+Output:
+
+```shell
+{ empty: false }
+```
+
+The next method that we are going to implement is the `search` method. It takes in a value and returns `true` if the value exist in a tree else `false`. We are going to start searching from the `root` node.
+
+1. if the value we are trying to search is greater than the value of the parent node we go to the right
+2. else we go to the left
+3. only if the value we are trying to search is not the value of the root node.
+
+```ts
+class BST<T> {
+  // ...
+  search(value: T) {
+    return this.searchTree(this.root, value);
+  }
+  private searchTree(root: TreeNode<T> | null, value: T): boolean {
+    if (!!!root) return false;
+    if (root.value === value) return true;
+    if (root.value < value) {
+      // go to the right
+      return this.searchTree(root.right, value);
+    } else {
+      // go to teh left
+      return this.searchTree(root.left, value);
+    }
+  }
+  // ...
+}
+const bst = new BST<number>();
+bst.insert(10);
+bst.insert(20);
+bst.insert(5);
+bst.insert(99);
+bst.insert(0);
+console.log({
+  empty: bst.isEmpty(),
+  ten: bst.search(10),
+  twenty: bst.search(20),
+  thirty: bst.search(30),
+});
+```
+
+Output:
+
+```shell
+{ empty: false, ten: true, twenty: true, thirty: false }
+```
+
+The next method that we are going to implement is the `min` which is responsible for finding the minimum value in a tree.
+
+1. If the tree has `1` node which means that is the minimum value.
+2. Otherwise we focus on the left side of the tree.
+
+```ts
+class BST<T> {
+  // ...
+  min() {
+    return this.searchMin(this.root);
+  }
+  private searchMin(root: TreeNode<T> | null): T | null {
+    if (!root) return null;
+    if (!root.left) return root.value;
+    return this.searchMin(root.left);
+  }
+
+  // ...
+}
+const bst = new BST<number>();
+bst.insert(10);
+bst.insert(20);
+bst.insert(5);
+bst.insert(99);
+bst.insert(0);
+console.log({
+  empty: bst.isEmpty(),
+  ten: bst.search(10),
+  twenty: bst.search(20),
+  thirty: bst.search(30),
+  min: bst.min(),
+});
+```
+
+Output:
+
+```shell
+{ empty: false, ten: true, twenty: true, thirty: false, min: 0 }
+```
+
+The next method that we are going to implement is the `max` which is responsible for finding the maximum value in a tree.
+
+1. If the tree has `1` node which means that is the maximum value.
+2. Otherwise we focus on the right side of the tree.
+
+```ts
+class BST<T> {
+  // ...
+
+  max() {
+    return this.searchMax(this.root);
+  }
+  private searchMax(root: TreeNode<T> | null): T | null {
+    if (!root) return null;
+    if (!root.right) return root.value;
+    return this.searchMax(root.right);
+  }
+
+  // ...
+}
+const bst = new BST<number>();
+bst.insert(10);
+bst.insert(0);
+bst.insert(20);
+bst.insert(99);
+bst.insert(5);
+
+console.log({
+  empty: bst.isEmpty(),
+  ten: bst.search(10),
+  twenty: bst.search(20),
+  thirty: bst.search(30),
+  min: bst.min(),
+  max: bst.max(),
+});
+```
+
+Output:
+
+```shell
+{
+  empty: false,
+  ten: true,
+  twenty: true,
+  thirty: false,
+  min: 0,
+  max: 99
 }
 ```
 
+The next method that we will implement is the `delete` method. This method is responsible for deleting a node by value in a tree.
+
+1. if the root is null we return the root
+2. if the vale that we are trying to delete is less than the root value we traverse to the left and recursively call the deleteNode method otherwise we traverse to the right.
+3. if there is no left or right node then this means that we are trying to delete the value that is not in teh tree we return null.
+4. if there is no left node we return the root's right node
+5. if there is no right node we return the root's left node
+6. the root value will be set to the minimum value in on the right
+7. we return the root node after all the checks.
+
+```ts
+class BST<T> {
+  // ...
+  delete(value: T) {
+    this.root = this.deleteNode(this.root, value);
+  }
+
+  private deleteNode(root: TreeNode<T> | null, value: T) {
+    if (root === null) return root;
+    if (value < root.value) {
+      root.left = this.deleteNode(root.left, value);
+    } else if (root > root.value) {
+      root.right = this.deleteNode(root.right, value);
+    } else {
+      if (!!!root.left && !!!root.right) return null;
+      if (!!!root.left) {
+        return root.right;
+      } else if (!!!root.right) {
+        return root.left;
+      }
+      root.value = this.searchMin(root.right)!;
+      root.right = this.deleteNode(root.right, root.value);
+    }
+    return root;
+  }
+  // ...
+}
+const bst = new BST<number>();
+bst.insert(10);
+bst.insert(0);
+bst.insert(20);
+bst.insert(99);
+bst.insert(5);
+bst.delete(0);
+console.log({
+  empty: bst.isEmpty(),
+  ten: bst.search(10),
+  twenty: bst.search(20),
+  thirty: bst.search(30),
+  min: bst.min(),
+  max: bst.max(),
+});
+```
+
 Output:
 
 ```shell
-
+{
+  empty: false,
+  ten: true,
+  twenty: true,
+  thirty: false,
+  min: 5,
+  max: 99
+}
 ```
+
+###### `1.1 Traversing through a BST`
+
+This basically means that we are visiting all nodes in a tree. There are two ways to traverse a tree which are:
+
+1. Depth First Search (DFS)
+2. Breadth First Search (BFS)
+
+###### `1.1.1 Depth First Search (DFS)`
+
+The DFS algorithm start at the root node and explores as far as possible along each branch before backtracking. Depending on the order there are 3 type of `DFS` which are:
+
+1. PreOrder
+2. InOrder
+3. PostOrder
+
+**Pre Order Traversal**
+The algorithm for this traversal is as follows:
+
+- Read the data of the node
+- Visit the left subtree
+- Visit the right subtree
+
+**In Order Traversal**
+
+- Visit the left subtree
+- Read the data of the node
+- Visit the right subtree
+
+**Post Order Traversal**
+
+- Visit the left subtree
+- Visit the right subtree
+- Read the data of the node
+
+Now let's implement this in code. We are going to add `3` methods:
+
+1. `preOrder`
+2. `postOrder`
+3. `inOrder`
+
+In our `BST` class as follows:
+
+```ts
+class BST<T> {
+  // ...
+  preOrder() {
+    console.log(this._preOrder(this.root).join(", "));
+  }
+  inOrder() {
+    console.log(this._inOrder(this.root).join(", "));
+  }
+  postOrder() {
+    console.log(this._postOrder(this.root).join(", "));
+  }
+
+  private _preOrder(root: TreeNode<T> | null): T[] {
+    const values: T[] = [];
+    if (root) {
+      values.push(root.value); // read the value
+      const leftValues = this._preOrder(root.left);
+      values.push(...leftValues);
+      const rightValues = this._preOrder(root.right);
+      values.push(...rightValues);
+    }
+    return values;
+  }
+  private _inOrder(root: TreeNode<T> | null): T[] {
+    const values: T[] = [];
+    if (root) {
+      const leftValues = this._inOrder(root.left);
+      values.push(...leftValues);
+      values.push(root.value); // read the value
+      const rightValues = this._inOrder(root.right);
+      values.push(...rightValues);
+    }
+    return values;
+  }
+  private _postOrder(root: TreeNode<T> | null): T[] {
+    const values: T[] = [];
+    if (root) {
+      const leftValues = this._postOrder(root.left);
+      values.push(...leftValues);
+      const rightValues = this._postOrder(root.right);
+      values.push(...rightValues);
+      values.push(root.value); // read the value
+    }
+    return values;
+  }
+
+  // ...
+}
+const bst = new BST<number>();
+bst.insert(10);
+bst.insert(0);
+bst.insert(20);
+bst.insert(99);
+bst.insert(5);
+bst.delete(0);
+
+bst.preOrder();
+bst.inOrder();
+bst.postOrder();
+```
+
+Output:
+
+```shell
+10, 5, 20, 99
+5, 10, 20, 99
+5, 99, 20, 10
+```
+
+###### `1.1.2 Breadth First Search (BFS)`
+
+With the BFS algorithm we explore all the nodes preset depth prior to moving on to the nodes at the next depth level. Here are the steps to achieve `BFS`
+
+1. Create a Queue
+2. Enqueue the root node
+3. As long as the node exist in the queue perform the following operations:
+
+- Dequeue the node from the front
+- Read the node's value
+- Enqueue the node's left child if exists
+- Enqueue the node's right child if exists
+
+Let's create a method called `levelOrder` that will do the `bfs` traversal in a tree.
+
+```ts
+class BST<T> {
+  // ...
+  levelOrder() {
+    const queue = [];
+    const values: T[] = [];
+    queue.push(this.root);
+    while (queue.length) {
+      let curr = queue.shift();
+      if (curr) {
+        values.push(curr.value);
+        if (curr.left) {
+          queue.push(curr.left);
+        }
+        if (curr.right) {
+          queue.push(curr.right);
+        }
+      }
+    }
+    console.log(values.join(", "));
+  }
+  // ...
+}
+const bst = new BST<number>();
+bst.insert(10);
+bst.insert(0);
+bst.insert(20);
+bst.insert(99);
+bst.insert(5);
+bst.delete(0);
+
+bst.preOrder();
+bst.inOrder();
+bst.postOrder();
+bst.levelOrder();
+```
+
+Output:
+
+```shell
+10, 5, 20, 99
+5, 10, 20, 99
+5, 99, 20, 10
+10, 5, 20, 99
+```
+
+The next method that we are going to implement is the `height`. which is responsible for calculating the height of the tree.
+
+1. traverse through the left node and right node from the root
+2. return the maximum number of nodes a tree has from the two branches.
+
+```ts
+class BST<T> {
+  // ...
+  height() {
+    return this.getHeight(this.root);
+  }
+  private getHeight(node: TreeNode<T> | null): number {
+    if (node === null) return 0;
+    const leftHeight = this.getHeight(node.left);
+    const rightHeight = this.getHeight(node.right);
+    return Math.max(leftHeight, rightHeight) + 1;
+  }
+  // ...
+}
+
+const bst = new BST<number>();
+bst.insert(10);
+bst.insert(0);
+bst.insert(20);
+bst.insert(99);
+bst.insert(5);
+console.log({ height: bst.height() });
+```
+
+Output:
+
+```shell
+{ height: 3 }
+```
+
+The next method that we are going to implement is the `isBST` method which checks if the a tree is binary tree or not.
+
+```ts
+class BST<T> {
+  // ...
+  isBST() {
+    return this._isBST(this.root, this.min(), this.max());
+  }
+
+  private _isBST(node: TreeNode<T> | null, min: any, max: any): boolean {
+    if (!node) {
+      return true;
+    }
+    if (node.value < min || node.value > max) {
+      return false;
+    }
+    return (
+      this._isBST(node.left, min, node.value) &&
+      this._isBST(node.right, node.value, max)
+    );
+  }
+  // ...
+}
+const bst = new BST<number>();
+bst.insert(10);
+bst.insert(0);
+bst.insert(20);
+bst.insert(99);
+bst.insert(5);
+
+console.log({ height: bst.height(), bst: bst.isBST() });
+```
+
+Output:
+
+```shell
+{ height: 3, bst: true }
+```
+
+The whole implementation of the `BST` will be found in the [`bst.ts`](/06_DATA_STRUCTURES/bst.ts) file.
