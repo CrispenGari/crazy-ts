@@ -22,9 +22,10 @@ In this readme we are going to have a look at how to implement some algorithms i
     - [2.2 Recursive approach](#22-recursive-approach)
 - [Sorting Algorithm](#sorting-algorithm)
   - [1. Bubble Sort](#1-bubble-sort)
-  - [Insertion Sort](#insertion-sort)
-  - [Quick Sort](#quick-sort)
-  - [Merge Sort](#merge-sort)
+  - [2. Insertion Sort](#2-insertion-sort)
+  - [3. Quick Sort](#3-quick-sort)
+  - [4. Merge Sort](#4-merge-sort)
+  - [5. Stalin Sort](#5-stalin-sort)
 - [Miscellaneous](#miscellaneous)
   - [1. Cartesian Product](#1-cartesian-product)
   - [2. Climbing Stairs](#2-climbing-stairs)
@@ -379,7 +380,7 @@ function bubbleSort(ele: number[]) {
 }
 ```
 
-#### Insertion Sort
+#### 2. Insertion Sort
 
 Having an array of numbers we want to sort the numbers in either descending or ascending order. Here is how the insertion sort works.
 
@@ -441,7 +442,7 @@ function insertionSort(arr: number[]) {
 
 - Time complexity: **O(n^2)**
 
-#### Quick Sort
+#### 3. Quick Sort
 
 - When doing a quicksort first we need to pick up the pivot element.
   - **How do we pick up a pivot?.**
@@ -542,7 +543,7 @@ function partition(arr: number[], left: number, right: number): number {
 
 - Time complexity: **O(n^2)**
 
-#### Merge Sort
+#### 4. Merge Sort
 
 The merge sort works as follows
 
@@ -594,6 +595,40 @@ function mergeSort(arr: number[]) {
 ```
 
 - Time complexity: **O(n.log(n))**
+
+#### 5. Stalin Sort
+
+This is a sorting algorithm where an element that us not in order is removed from the list. The elements that are not sorted are moved to the start of the list in the order that they have appeared in the list. This process is repeated until the list is sorted.
+
+```ts
+function stalinSort(arr: number[]) {
+  let j = 0;
+  while (true) {
+    let moved = 0;
+    for (let i = 0; i < arr.length - 1 - j; i++) {
+      if (arr[i] > arr[i + 1]) {
+        let index;
+        let temp;
+        index = arr[i];
+        temp = arr[i + 1];
+        arr.splice(i, 1);
+        arr.splice(i, 0, temp);
+        arr[i] = temp;
+        arr.splice(i + 1, 1);
+        arr.splice(i + 1, 0, index);
+        arr[i + 1] = index;
+        moved++;
+      }
+    }
+    j++;
+    if (moved == 0) {
+      break;
+    }
+  }
+}
+```
+
+- Time complexity: **O(n^2)**
 
 ### Miscellaneous
 
