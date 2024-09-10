@@ -17,6 +17,62 @@ main();
 
 This ReadMe file contain some TypeScript cool features and React.ts advanced types. This repository is just a mixture of typescript code.
 
+### Table of Contents
+
+- [TypeScript and React.](#typescript-and-react)
+- [Table of Contents](#table-of-contents)
+- [Generic Types.](#generic-types)
+- [Working with Objects.](#working-with-objects)
+- [Interfaces](#interfaces)
+- [Prop Type React.](#prop-type-react)
+- [Hooks Types](#hooks-types)
+- [Unions.](#unions)
+- [Utility Types](#utility-types)
+- [Type Predicates](#type-predicates)
+- [Advanced TS](#advanced-ts)
+- [When to use generics?](#when-to-use-generics)
+- [Removing a union member in Ts](#removing-a-union-member-in-ts)
+- [React Props to a component](#react-props-to-a-component)
+- [Dynamic Function Arguments](#dynamic-function-arguments)
+- ["noUncheckedIndexedAccess"](#nouncheckedindexedaccess)
+- [TypeScript Globals](#typescript-globals)
+- [Decode Search Parameters](#decode-search-parameters)
+- [`extends` to constrain generics](#extends-to-constrain-generics)
+- [Function Overloads](#function-overloads)
+- [Extracting React Props](#extracting-react-props)
+- [Getting Object Keys](#getting-object-keys)
+- [Generics in React Components](#generics-in-react-components)
+- [Removing Object Keys](#removing-object-keys)
+- [Building TS Libraries](#building-ts-libraries)
+- [Literal Types](#literal-types)
+- [Index Access Types](#index-access-types)
+- [Fixing Objects with infer and template literals](#fixing-objects-with-infer-and-template-literals)
+- [Turning Module to Type](#turning-module-to-type)
+- [Extracting Type from keys that starts with `a`](#extracting-type-from-keys-that-starts-with-a)
+- [Assertion Functions](#assertion-functions)
+- [Deep Partials](#deep-partials)
+- [Custom Errors](#custom-errors)
+- [Enum](#enum)
+- [The `infer` keyword.](#the-infer-keyword)
+- [Generics from external libraries](#generics-from-external-libraries)
+- [Debug types in VSCode](#debug-types-in-vscode)
+- [GroupBy](#groupby)
+- [Decorators](#decorators)
+- [Decode search Params example](#decode-search-params-example)
+- [Declare Globals](#declare-globals)
+- [Index Signatures](#index-signatures)
+- [Type Helpers](#type-helpers)
+  - [1. `Prettify`](#1-prettify)
+  - [2. `StrictOmit`](#2-strictomit)
+- [Using `never` in narrowing types](#using-never-in-narrowing-types)
+- [Nominal Types](#nominal-types)
+- [`NoInfer` Utility](#noinfer-utility)
+- [Parameter Passing.](#parameter-passing)
+- [Important TypeScript packages.](#important-typescript-packages)
+- [References](#references)
+
+---
+
 ### Generic Types.
 
 1. Array of types.
@@ -1781,7 +1837,11 @@ for (const key in me) {
 Object.keys(me).forEach((key) => console.log(me[key as keyof typeof me]));
 ```
 
-### Visualizing types
+### Type Helpers
+
+In this section we are going to look at some useful typescript helpers.
+
+#### 1. `Prettify`
 
 Suppose we have a giant type `TProfile` that extends various types as follows:
 
@@ -1817,6 +1877,86 @@ const user: Prettify<TProfile> = {
 type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
+```
+
+#### 2. `StrictOmit`
+
+Let's say we have a typescript type `TUser` and we want to omit the property `password` from that type in `TUser2` we can use the `Omit` typescript utility as follows:
+
+```ts
+type TUser = {
+  id: number;
+  email: string;
+  password: string;
+};
+
+type TUser2 = Omit<TUser, "password">; // valid and yield  { id: number; email: string;}
+type TUser3 = Omit<TUser, "hello">; // valid and yield  { id: number; email: string; password: string}
+```
+
+However, we should have an `Omit` that is strict based on the type properties for example the "hello" is not a property of the `TUser` type. Here is `StrictOmit` helper type that solves that issue.
+
+```ts
+type StrictOmit<T, P extends keyof T> = Omit<T, P>;
+
+type TUser = {
+  id: number;
+  email: string;
+  password: string;
+};
+
+type TUser2 = StrictOmit<TUser, "password">; // happy
+//     ^?
+type TUser3 = StrictOmit<TUser, "hello">; // not-happy
+//     ^?
+```
+
+### Using `never` in narrowing types
+
+Let's say we have a function that takes in an event that is any string except the word `click`. We want to make this function accepts an event which is of type string except for the word "click". This is how we can do it,
+
+```ts
+type EventTypeExceptClick<T> = T extends "click" ? never : T;
+
+const handleEvent = <T extends string>(event: EventTypeExceptClick<T>) => {
+  // do something
+};
+
+handleEvent("hover"); // happy
+handleEvent(9); // not happy
+handleEvent("click"); // not happy: Error "Argument of type 'string' is not assignable to parameter of type 'never'."
+```
+
+### Nominal Types
+
+Let's say we have the following code and we want to make a function `acceptAbsolutePath` error if we pass the relative path.
+
+```ts
+type AbsolutePath = string;
+type RelativePath = string;
+
+const absolutePath: AbsolutePath = "/path/to/a/file";
+const relativePath: RelativePath = "../../path/to/a/file";
+
+const acceptAbsolutePath = (path: AbsolutePath) => path;
+
+acceptAbsolutePath(relativePath); // Make this error??
+```
+
+To make this work we can use nominal types and change our code to:
+
+```ts
+declare const _brand: unique symbol;
+type TBrand<T, TBrand> = T & { [_brand]: TBrand };
+
+type AbsolutePath = TBrand<string, "AbsolutePath">;
+type RelativePath = TBrand<string, "RelativePath">;
+
+const absolutePath = "/path/to/a/file" as AbsolutePath;
+const relativePath: RelativePath = "../../path/to/a/file" as RelativePath;
+
+const acceptAbsolutePath = (path: AbsolutePath) => path;
+acceptAbsolutePath(relativePath); // Make this error??
 ```
 
 ### `NoInfer` Utility
